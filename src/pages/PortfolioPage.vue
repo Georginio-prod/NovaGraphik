@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useViewport } from '@/composables/useViewport'
+import { usePortfolio } from '@/composables/usePortfolio'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NPill from '@/components/base/NPill.vue'
@@ -10,17 +12,12 @@ import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 
 const { isMobile } = useViewport()
-
-const PF_CATS = ['Tout', 'Logo', 'Flyers', 'Motion design', '3D', '2D', 'Photographie', 'UX/UI Web', 'Reportage', 'Montage vidéo']
-const PF_ITEMS: [string, string, number][] = [
-  ['Charte Visiosphere', 'Logo', 0], ['Affiche événement', 'Flyers', 2], ['Teaser produit', 'Motion design', 3],
-  ['Packaging 3D', '3D', 1], ['Illustration 2D', '2D', 4], ['Shooting corporate', 'Photographie', 5],
-  ['Site vitrine', 'UX/UI Web', 0], ['Reportage Sat', 'Reportage', 2], ['Court-métrage', 'Montage vidéo', 3],
-  ['Logo restaurant', 'Logo', 4], ['Flyer promo', 'Flyers', 1], ['Animation logo', 'Motion design', 5],
-]
+const { items, categories, load } = usePortfolio()
+onMounted(load)
 
 const cat = ref('Tout')
-const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter((i) => i[1] === cat.value)))
+const cats = computed(() => ['Tout', ...categories.value])
+const filtered = computed(() => (cat.value === 'Tout' ? items.value : items.value.filter((i) => i.category === cat.value)))
 </script>
 
 <template>
@@ -32,27 +29,27 @@ const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter(
     />
     <section class="py-10 tab:py-14 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
-        <div class="flex gap-2.5 flex-wrap mb-9">
+        <div v-if="cats.length > 1" class="flex gap-2.5 flex-wrap mb-9">
           <NPill
-            v-for="c in PF_CATS"
+            v-for="c in cats"
             :key="c"
             :active="cat === c && c !== 'Tout'"
             :accent="cat === c && c === 'Tout'"
             @click="cat = c"
           >{{ c }}</NPill>
         </div>
-        <div
-          class="grid gap-[22px]"
-          :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'"
-        >
-          <div
-            v-for="(it, i) in items"
-            :key="it[0]"
+
+        <div v-if="filtered.length" class="grid gap-[22px]" :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'">
+          <RouterLink
+            v-for="(it, i) in filtered"
+            :key="it.id"
+            :to="`/portfolio/${it.slug}`"
             v-reveal="(i % 3) * 70"
-            class="group rounded-lg overflow-hidden cursor-pointer shadow-nova-sm transition-all duration-nova ease-nova bg-nova-surface border border-line hover:shadow-nova-lg hover:-translate-y-1"
+            class="group rounded-lg overflow-hidden cursor-pointer shadow-nova-sm transition-all duration-nova ease-nova bg-nova-surface border border-line hover:shadow-nova-lg hover:-translate-y-1 no-underline block"
           >
             <div class="relative overflow-hidden">
-              <NPlaceholder :idx="it[2]" :height="230" radius="rounded-none" />
+              <img v-if="it.cover_image" :src="it.cover_image" :alt="it.title" class="w-full h-[230px] object-cover block" />
+              <NPlaceholder v-else :idx="i" :height="230" radius="rounded-none" />
               <div
                 class="absolute inset-0 bg-[rgba(2,44,61,0.55)] grid place-items-center opacity-0 transition-opacity duration-nova group-hover:opacity-100"
               >
@@ -62,11 +59,12 @@ const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter(
               </div>
             </div>
             <div class="px-[18px] py-4">
-              <NEyebrow class="text-[10px]">{{ it[1] }}</NEyebrow>
-              <h3 class="font-display text-[21px] font-semibold mt-1.5 mb-0 text-fg-1">{{ it[0] }}</h3>
+              <NEyebrow class="text-[10px]">{{ it.category }}</NEyebrow>
+              <h3 class="font-display text-[21px] font-semibold mt-1.5 mb-0 text-fg-1">{{ it.title }}</h3>
             </div>
-          </div>
+          </RouterLink>
         </div>
+        <p v-else class="text-fg-3">Aucune réalisation pour le moment.</p>
       </NContainer>
     </section>
     <CtaBand />
