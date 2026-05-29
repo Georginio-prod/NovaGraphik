@@ -7,12 +7,11 @@ const props = withDefaults(defineProps<{
   idx?: number
   height?: number | string
   radius?: string
-  /** optional real image source; when set it fills the surface */
   src?: string
 }>(), {
   idx: 0,
   height: 200,
-  radius: 'var(--r-lg)',
+  radius: 'rounded-lg',
 })
 
 const heightCss = computed(() =>
@@ -22,47 +21,21 @@ const heightCss = computed(() =>
 
 <template>
   <div
-    class="n-ph"
-    :style="{ height: heightCss, borderRadius: radius, background: novaGrad(idx) }"
+    class="relative overflow-hidden flex items-end p-4 box-border"
+    :class="radius"
+    :style="{ height: heightCss, background: novaGrad(idx) }"
   >
-    <img v-if="src" :src="src" alt="" class="real" />
-    <img v-else src="/assets/compass-mark-white.png" alt="" class="watermark" />
-    <span v-if="label" class="label">{{ label }}</span>
+    <img v-if="src" :src="src" alt="" class="absolute inset-0 w-full h-full object-cover" />
+    <img
+      v-else
+      src="/assets/compass-mark-white.png"
+      alt=""
+      class="absolute -right-[30px] -top-[30px] w-[150px] opacity-10 pointer-events-none"
+    />
+    <span
+      v-if="label"
+      class="relative font-glyphic text-[11px] tracking-[0.18em] uppercase text-white/90 font-semibold"
+    >{{ label }}</span>
     <slot />
   </div>
 </template>
-
-<style scoped>
-.n-ph {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  padding: 16px;
-  box-sizing: border-box;
-}
-.watermark {
-  position: absolute;
-  right: -30px;
-  top: -30px;
-  width: 150px;
-  opacity: 0.1;
-  pointer-events: none;
-}
-.real {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.label {
-  position: relative;
-  font-family: var(--font-glyphic);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
-  font-weight: 600;
-}
-</style>

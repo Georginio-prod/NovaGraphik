@@ -23,6 +23,6 @@ const cmp = computed(() => ICONS[props.name])
     :color="color"
     :stroke-width="strokeWidth"
     :absolute-stroke-width="true"
-    style="display: inline-block; flex: none;"
+    class="inline-block shrink-0"
   />
 </template>

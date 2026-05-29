@@ -33,114 +33,52 @@ async function submit() {
 </script>
 
 <template>
-  <div class="login">
-    <img src="/assets/compass-mark-white.png" alt="" class="bg-mark" />
-    <div class="card nova-enter nova-enter-1">
-      <img src="/assets/logo-nova-graphik.png" alt="Nova Graphik" class="logo" />
-      <NEyebrow on-dark style="margin-bottom: 10px;">Espace administrateur</NEyebrow>
-      <h1>Connexion</h1>
-      <p class="sub">Accédez au tableau de bord pour gérer le contenu du site.</p>
+  <div class="min-h-screen bg-gradient-to-br from-nova-navy-900 from-0% via-nova-navy via-[55%] to-nova-teal-deep grid place-items-center p-6 relative overflow-hidden">
+    <img
+      src="/assets/compass-mark-white.png"
+      alt=""
+      class="absolute -right-[120px] -bottom-[120px] w-[520px] opacity-[0.07] pointer-events-none"
+    />
+    <div class="relative w-full max-w-[420px] bg-nova-surface rounded-xl p-10 shadow-nova-lg nova-enter nova-enter-1">
+      <img src="/assets/logo-nova-graphik.png" alt="Nova Graphik" class="w-[130px] mb-6" />
+      <NEyebrow on-dark class="mb-2.5">Espace administrateur</NEyebrow>
+      <h1 class="font-display text-[34px] font-semibold my-1.5 text-fg-1 tracking-tight">Connexion</h1>
+      <p class="text-sm text-fg-3 m-0 mb-[26px]">Accédez au tableau de bord pour gérer le contenu du site.</p>
 
       <form @submit.prevent="submit">
-        <label class="lbl">E-mail</label>
-        <input v-model="email" type="email" autocomplete="username" placeholder="vous@novagraphik.fr" class="inp" />
+        <label class="block text-[11px] font-semibold tracking-wider uppercase text-fg-2 mt-3.5">E-mail</label>
+        <input
+          v-model="email"
+          type="email"
+          autocomplete="username"
+          placeholder="vous@novagraphik.fr"
+          class="w-full box-border font-sans text-sm text-fg-1 bg-nova-paper border border-line-strong rounded-sm px-3.5 py-3 outline-none mt-2 transition-[border-color,box-shadow,background] duration-nova focus:border-nova-lime focus:shadow-[0_0_0_3px_rgba(12,242,93,0.18)] focus:bg-nova-surface"
+        />
 
-        <label class="lbl">Mot de passe</label>
-        <input v-model="password" type="password" autocomplete="current-password" placeholder="••••••••" class="inp" />
+        <label class="block text-[11px] font-semibold tracking-wider uppercase text-fg-2 mt-3.5">Mot de passe</label>
+        <input
+          v-model="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+          class="w-full box-border font-sans text-sm text-fg-1 bg-nova-paper border border-line-strong rounded-sm px-3.5 py-3 outline-none mt-2 transition-[border-color,box-shadow,background] duration-nova focus:border-nova-lime focus:shadow-[0_0_0_3px_rgba(12,242,93,0.18)] focus:bg-nova-surface"
+        />
 
-        <p v-if="error" class="err"><NIcon name="lock" :size="14" /> {{ error }}</p>
+        <p v-if="error" class="flex items-center gap-1.5 text-err text-[13px] mt-4 mb-0">
+          <NIcon name="lock" :size="14" /> {{ error }}
+        </p>
 
-        <NButton variant="accent" size="lg" icon="arrow-right" block style="margin-top: 8px;">
+        <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-2">
           {{ loading ? 'Connexion…' : 'Se connecter' }}
         </NButton>
       </form>
 
-      <RouterLink to="/" class="back"><NIcon name="arrow-left" :size="15" /> Retour au site</RouterLink>
+      <RouterLink
+        to="/"
+        class="inline-flex items-center gap-1.5 mt-[22px] text-[13px] text-fg-3 no-underline hover:text-nova-teal"
+      >
+        <NIcon name="arrow-left" :size="15" /> Retour au site
+      </RouterLink>
     </div>
   </div>
 </template>
-
-<style scoped>
-.login {
-  min-height: 100vh;
-  background: linear-gradient(150deg, #022c3d 0%, #034159 55%, #025951 100%);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-}
-.bg-mark {
-  position: absolute;
-  right: -120px;
-  bottom: -120px;
-  width: 520px;
-  opacity: 0.07;
-  pointer-events: none;
-}
-.card {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  background: #fff;
-  border-radius: var(--r-xl);
-  padding: 40px 38px;
-  box-shadow: var(--shadow-lg);
-}
-.logo { width: 130px; margin-bottom: 24px; }
-h1 {
-  font-family: var(--font-display);
-  font-size: 34px;
-  font-weight: 600;
-  margin: 6px 0 6px;
-  color: var(--fg-1);
-  letter-spacing: -0.02em;
-}
-.sub { font-size: 14px; color: var(--fg-3); margin: 0 0 26px; }
-.lbl {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fg-2);
-  margin-top: 14px;
-}
-.inp {
-  width: 100%;
-  box-sizing: border-box;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--fg-1);
-  background: var(--nova-paper);
-  border: 1px solid var(--border-2);
-  border-radius: var(--r-sm);
-  padding: 12px 14px;
-  outline: none;
-  margin-top: 8px;
-  transition: border-color var(--dur), box-shadow var(--dur), background var(--dur);
-}
-.inp:focus {
-  border-color: var(--nova-lime);
-  box-shadow: 0 0 0 3px rgba(12, 242, 93, 0.18);
-  background: #fff;
-}
-.err {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--err);
-  font-size: 13px;
-  margin: 16px 0 0;
-}
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 22px;
-  font-size: 13px;
-  color: var(--fg-3);
-  text-decoration: none;
-}
-.back:hover { color: var(--nova-teal); }
-</style>

@@ -30,9 +30,9 @@ const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter(
       title="Plongez dans nos projets"
       intro="Laissez-vous inspirer par notre univers créatif — chaque réalisation raconte une histoire de marque."
     />
-    <section class="sec">
+    <section class="py-10 tab:py-14 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
-        <div class="pills">
+        <div class="flex gap-2.5 flex-wrap mb-9">
           <NPill
             v-for="c in PF_CATS"
             :key="c"
@@ -41,17 +41,29 @@ const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter(
             @click="cat = c"
           >{{ c }}</NPill>
         </div>
-        <div class="pf-grid" :class="{ 'is-mobile': isMobile }">
-          <div v-for="(it, i) in items" :key="it[0]" v-reveal="(i % 3) * 70" class="pf-card">
-            <div class="img">
-              <NPlaceholder :idx="it[2]" :height="230" radius="0" />
-              <div class="overlay">
-                <span class="see">Voir le projet <NIcon name="arrow-up-right" :size="16" color="var(--nova-lime)" /></span>
+        <div
+          class="grid gap-[22px]"
+          :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'"
+        >
+          <div
+            v-for="(it, i) in items"
+            :key="it[0]"
+            v-reveal="(i % 3) * 70"
+            class="group rounded-lg overflow-hidden cursor-pointer shadow-nova-sm transition-all duration-nova ease-nova bg-nova-surface border border-line hover:shadow-nova-lg hover:-translate-y-1"
+          >
+            <div class="relative overflow-hidden">
+              <NPlaceholder :idx="it[2]" :height="230" radius="rounded-none" />
+              <div
+                class="absolute inset-0 bg-[rgba(2,44,61,0.55)] grid place-items-center opacity-0 transition-opacity duration-nova group-hover:opacity-100"
+              >
+                <span class="inline-flex items-center gap-2 text-white font-glyphic text-xs tracking-[0.18em] uppercase">
+                  Voir le projet <NIcon name="arrow-up-right" :size="16" color="#0cf25d" />
+                </span>
               </div>
             </div>
-            <div class="meta">
-              <NEyebrow style="font-size: 10px;">{{ it[1] }}</NEyebrow>
-              <h3>{{ it[0] }}</h3>
+            <div class="px-[18px] py-4">
+              <NEyebrow class="text-[10px]">{{ it[1] }}</NEyebrow>
+              <h3 class="font-display text-[21px] font-semibold mt-1.5 mb-0 text-fg-1">{{ it[0] }}</h3>
             </div>
           </div>
         </div>
@@ -60,51 +72,3 @@ const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter(
     <CtaBand />
   </div>
 </template>
-
-<style scoped>
-.sec { padding: 56px 0 96px; background: var(--nova-paper); }
-.pills { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
-.pf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-.pf-grid.is-mobile { grid-template-columns: 1fr; }
-
-.pf-card {
-  border-radius: var(--r-lg);
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--dur) var(--ease-out);
-  background: #fff;
-  border: 1px solid var(--border-1);
-}
-.pf-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
-.img { position: relative; overflow: hidden; }
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(2, 44, 61, 0.55);
-  display: grid;
-  place-items: center;
-  opacity: 0;
-  transition: opacity var(--dur);
-}
-.pf-card:hover .overlay { opacity: 1; }
-.see {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #fff;
-  font-family: var(--font-glyphic);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-.meta { padding: 16px 18px; }
-.meta h3 {
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 600;
-  margin: 6px 0 0;
-  color: var(--fg-1);
-}
-@media (max-width: 759px) { .sec { padding: 40px 0 64px; } }
-</style>

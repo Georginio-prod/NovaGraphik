@@ -24,8 +24,23 @@ const sent = ref(false)
 const name = ref('')
 const email = ref('')
 const message = ref('')
+const errors = ref<{ name?: string; email?: string; message?: string }>({})
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function validate() {
+  const next: { name?: string; email?: string; message?: string } = {}
+  if (!name.value.trim()) next.name = 'Indiquez votre nom.'
+  const mail = email.value.trim()
+  if (!mail) next.email = 'Indiquez votre e-mail.'
+  else if (!EMAIL_RE.test(mail)) next.email = 'Adresse e-mail invalide.'
+  if (!message.value.trim()) next.message = 'Décrivez votre projet.'
+  errors.value = next
+  return Object.keys(next).length === 0
+}
 
 function submit() {
+  if (!validate()) return
   sent.value = true
 }
 function reset() {
@@ -34,6 +49,7 @@ function reset() {
   email.value = ''
   message.value = ''
   sel.value = 'Identité visuelle'
+  errors.value = {}
 }
 </script>
 
@@ -44,58 +60,80 @@ function reset() {
       title="Parlons de votre projet"
       intro="Décrivez-nous votre besoin — nous revenons vers vous sous 24 h avec une proposition sur mesure."
     />
-    <section class="sec">
+    <section class="py-11 tab:py-16 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
-        <div class="grid" :class="{ 'is-mobile': isMobile }">
-          <!-- Left: coordinates -->
+        <div
+          class="grid items-start gap-10 tab:gap-14"
+          :class="isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_1.3fr]'"
+        >
           <div>
             <NSectionHeader eyebrow="Coordonnées" title="Nova Graphik" />
-            <div class="rows">
-              <div v-for="c in CONTACTS" :key="c[1]" class="crow">
-                <div class="c-ic"><NIcon :name="c[0]" :size="18" color="var(--nova-teal)" /></div>
+            <div class="flex flex-col gap-[18px] mt-7">
+              <div v-for="c in CONTACTS" :key="c[1]" class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-md bg-nova-fog grid place-items-center shrink-0">
+                  <NIcon :name="c[0]" :size="18" color="#02735e" />
+                </div>
                 <div>
-                  <div class="c-label">{{ c[1] }}</div>
-                  <div class="c-value">{{ c[2] }}</div>
+                  <div class="text-[11px] tracking-wider uppercase text-fg-3 font-semibold">{{ c[1] }}</div>
+                  <div class="text-[15px] text-fg-1 font-medium">{{ c[2] }}</div>
                 </div>
               </div>
             </div>
-            <div class="socials">
-              <a v-for="s in ['instagram', 'facebook', 'youtube']" :key="s" class="social">
+            <div class="mt-8 flex gap-3">
+              <a
+                v-for="s in ['instagram', 'facebook', 'youtube', 'tiktok']"
+                :key="s"
+                class="w-[42px] h-[42px] rounded-md bg-nova-navy grid place-items-center cursor-pointer"
+              >
                 <NIcon :name="s" :size="18" color="#fff" />
               </a>
             </div>
           </div>
 
-          <!-- Right: form -->
-          <div class="form-card" :class="{ 'is-mobile': isMobile }">
-            <div v-if="sent" class="success">
-              <div class="check"><NIcon name="check" :size="30" color="#042b16" :stroke-width="2.5" /></div>
-              <h3>Demande envoyée !</h3>
-              <p>Merci — nous vous répondons sous 24 h.</p>
+          <div
+            class="bg-nova-surface border border-line rounded-xl shadow-nova-md"
+            :class="isMobile ? 'p-6' : 'p-[38px]'"
+          >
+            <div v-if="sent" class="text-center py-10">
+              <div class="w-16 h-16 rounded-full bg-nova-lime grid place-items-center mx-auto mb-[22px]">
+                <NIcon name="check" :size="30" color="#042b16" :stroke-width="2.5" />
+              </div>
+              <h3 class="font-display text-[28px] font-semibold m-0 mb-2 text-fg-1">Demande envoyée !</h3>
+              <p class="text-[15px] text-fg-2 m-0 mb-6">Merci — nous vous répondons sous 24 h.</p>
               <NButton variant="ghost" @click="reset">Nouvelle demande</NButton>
             </div>
             <template v-else>
-              <NEyebrow style="margin-bottom: 20px;">Demander un devis</NEyebrow>
-              <div class="two" :class="{ 'is-mobile': isMobile }">
-                <NField v-model="name" label="Nom complet" placeholder="Votre nom" />
-                <NField v-model="email" label="E-mail" placeholder="vous@marque.tg" />
+              <NEyebrow class="mb-5">Demander un devis</NEyebrow>
+              <div
+                class="grid gap-4"
+                :class="isMobile ? 'grid-cols-1' : 'grid-cols-2'"
+              >
+                <NField v-model="name" label="Nom complet" placeholder="Votre nom" :error="errors.name" />
+                <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
               </div>
-              <div class="block">
-                <label class="field-label">Type de service</label>
-                <div class="svc-pills">
+              <div class="mt-4">
+                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service</label>
+                <div class="flex flex-wrap gap-2 mt-2">
                   <NPill v-for="s in SERVICES_OPTS" :key="s" :active="sel === s" @click="sel = s">{{ s }}</NPill>
                 </div>
               </div>
-              <div class="block">
-                <label class="field-label">Votre projet</label>
+              <div class="mt-4">
+                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Votre projet</label>
                 <textarea
                   v-model="message"
                   rows="4"
                   placeholder="Décrivez votre besoin, vos délais, votre budget…"
-                  class="nova-textarea"
+                  :aria-invalid="errors.message ? true : undefined"
+                  class="w-full box-border font-sans text-sm text-fg-1 bg-nova-paper border rounded-sm px-3.5 py-3 outline-none mt-2 resize-y transition-[border-color,box-shadow,background] duration-nova focus:bg-nova-surface"
+                  :class="
+                    errors.message
+                      ? 'border-err focus:border-err focus:shadow-[0_0_0_3px_rgba(192,57,43,0.15)]'
+                      : 'border-line-strong focus:border-nova-lime focus:shadow-[0_0_0_3px_rgba(12,242,93,0.18)]'
+                  "
                 />
+                <p v-if="errors.message" class="text-err text-[12px] mt-1.5 mb-0">{{ errors.message }}</p>
               </div>
-              <NButton variant="accent" size="lg" icon="arrow-right" block style="margin-top: 22px;" @click="submit">
+              <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-[22px]" @click="submit">
                 Envoyer ma demande
               </NButton>
             </template>
@@ -105,54 +143,3 @@ function reset() {
     </section>
   </div>
 </template>
-
-<style scoped>
-.sec { padding: 64px 0 96px; background: var(--nova-paper); }
-.grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 56px; align-items: start; }
-.grid.is-mobile { grid-template-columns: 1fr; gap: 40px; }
-
-.rows { display: flex; flex-direction: column; gap: 18px; margin-top: 28px; }
-.crow { display: flex; align-items: center; gap: 14px; }
-.c-ic { width: 44px; height: 44px; border-radius: var(--r-md); background: var(--nova-fog); display: grid; place-items: center; flex: none; }
-.c-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; }
-.c-value { font-size: 15px; color: var(--fg-1); font-weight: 500; }
-.socials { margin-top: 32px; display: flex; gap: 12px; }
-.social { width: 42px; height: 42px; border-radius: var(--r-md); background: var(--nova-navy); display: grid; place-items: center; cursor: pointer; }
-
-.form-card {
-  background: #fff;
-  border: 1px solid var(--border-1);
-  border-radius: var(--r-xl);
-  padding: 38px;
-  box-shadow: var(--shadow-md);
-}
-.form-card.is-mobile { padding: 24px; }
-.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.two.is-mobile { grid-template-columns: 1fr; }
-.block { margin-top: 16px; }
-.field-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-2); }
-.svc-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.nova-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--fg-1);
-  background: var(--nova-paper);
-  border: 1px solid var(--border-2);
-  border-radius: var(--r-sm);
-  padding: 12px 14px;
-  outline: none;
-  margin-top: 8px;
-  resize: vertical;
-  transition: border-color var(--dur), box-shadow var(--dur), background var(--dur);
-}
-.nova-textarea:focus { border-color: var(--nova-lime); box-shadow: 0 0 0 3px rgba(12, 242, 93, 0.18); background: #fff; }
-
-.success { text-align: center; padding: 40px 0; }
-.check { width: 64px; height: 64px; border-radius: 50%; background: var(--nova-lime); display: grid; place-items: center; margin: 0 auto 22px; }
-.success h3 { font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 8px; color: var(--fg-1); }
-.success p { font-size: 15px; color: var(--fg-2); margin: 0 0 24px; }
-
-@media (max-width: 759px) { .sec { padding: 44px 0 64px; } }
-</style>

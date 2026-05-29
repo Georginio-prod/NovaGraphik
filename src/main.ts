@@ -6,6 +6,9 @@ import ui from '@nuxt/ui/vue-plugin'
 import App from './App.vue'
 import { vReveal } from './directives/reveal'
 import { useAuth } from './composables/useAuth'
+import { initTheme } from './composables/useTheme'
+
+initTheme()
 
 const router = createRouter({
   history: createWebHistory(),

@@ -3,21 +3,10 @@ withDefaults(defineProps<{ onDark?: boolean }>(), { onDark: false })
 </script>
 
 <template>
-  <div class="n-eyebrow" :class="{ 'on-dark': onDark }">
+  <div
+    class="font-glyphic text-xs font-semibold tracking-[0.22em] uppercase"
+    :class="onDark ? 'text-nova-lime' : 'text-nova-teal'"
+  >
     <slot />
   </div>
 </template>
-
-<style scoped>
-.n-eyebrow {
-  font-family: var(--font-glyphic);
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--nova-teal);
-}
-.n-eyebrow.on-dark {
-  color: var(--nova-lime);
-}
-</style>
