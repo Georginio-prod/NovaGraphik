@@ -20,7 +20,21 @@ const router = createRouter({
     { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue') },
     { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue') },
     { path: '/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true } },
-    { path: '/dashboard', name: 'dashboard', component: () => import('./pages/DashboardPage.vue'), meta: { bare: true, requiresAdmin: true } },
+    {
+      path: '/dashboard',
+      component: () => import('./pages/dashboard/DashboardLayout.vue'),
+      meta: { bare: true, requiresAdmin: true },
+      children: [
+        { path: '', name: 'dashboard', component: () => import('./pages/dashboard/DashboardOverview.vue') },
+        { path: 'pages', name: 'dash-pages', component: () => import('./pages/dashboard/DashboardPages.vue') },
+        { path: 'portfolio', name: 'dash-portfolio', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Portfolios' } },
+        { path: 'team', name: 'dash-team', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Équipe' } },
+        { path: 'blogs', name: 'dash-blogs', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Blogs' } },
+        { path: 'partenaires', name: 'dash-partenaires', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Partenaires' } },
+        { path: 'tarifs', name: 'dash-tarifs', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Tarifs' } },
+        { path: 'settings', name: 'dash-settings', component: () => import('./pages/dashboard/DashboardSettings.vue') },
+      ],
+    },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior() {
