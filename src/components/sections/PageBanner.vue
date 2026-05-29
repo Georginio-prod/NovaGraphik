@@ -12,52 +12,24 @@ const { isMobile } = useViewport()
 </script>
 
 <template>
-  <section class="banner">
-    <img src="/assets/compass-mark-white.png" alt="" class="mark" />
-    <div class="inner" :class="{ 'is-mobile': isMobile }">
-      <NEyebrow on-dark class="nova-enter nova-enter-1" style="margin-bottom: 18px;">{{ eyebrow }}</NEyebrow>
-      <h1 class="title nova-enter nova-enter-2">{{ title }}</h1>
-      <p v-if="intro" class="intro nova-enter nova-enter-3">{{ intro }}</p>
+  <section class="bg-nova-navy-900 relative overflow-hidden">
+    <img
+      src="/assets/compass-mark-white.png"
+      alt=""
+      class="absolute -right-[60px] -top-[60px] w-80 opacity-[0.08] pointer-events-none"
+    />
+    <div
+      class="mx-auto max-w-[1200px] relative"
+      :class="isMobile ? 'px-5 py-14 pb-12' : 'px-8 pt-[88px] pb-[72px]'"
+    >
+      <NEyebrow on-dark class="nova-enter nova-enter-1 mb-[18px]">{{ eyebrow }}</NEyebrow>
+      <h1
+        class="font-display font-semibold text-[clamp(38px,5.5vw,64px)] leading-[1.02] tracking-tight text-white m-0 max-w-[760px] nova-enter nova-enter-2"
+      >{{ title }}</h1>
+      <p
+        v-if="intro"
+        class="text-[17px] leading-relaxed text-fg-on-dark-2 max-w-[580px] mt-[22px] mb-0 nova-enter nova-enter-3"
+      >{{ intro }}</p>
     </div>
   </section>
 </template>
-
-<style scoped>
-.banner {
-  background: var(--nova-navy-900);
-  position: relative;
-  overflow: hidden;
-}
-.mark {
-  position: absolute;
-  right: -60px;
-  top: -60px;
-  width: 320px;
-  opacity: 0.08;
-  pointer-events: none;
-}
-.inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 88px 32px 72px;
-  position: relative;
-}
-.inner.is-mobile { padding: 56px 20px 48px; }
-.title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(38px, 5.5vw, 64px);
-  line-height: 1.02;
-  letter-spacing: -0.025em;
-  color: #fff;
-  margin: 0;
-  max-width: 760px;
-}
-.intro {
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--fg-on-dark-2);
-  max-width: 580px;
-  margin: 22px 0 0;
-}
-</style>

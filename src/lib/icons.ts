@@ -9,6 +9,7 @@ import {
   FileText, Image as ImageIcon, PenLine, Users, Tag, Settings, Plus,
   GripVertical, Phone, MapPin, Quote,
   Sparkles, Menu, X, LogOut, Lock, Save, Trash2, ChevronUp, ChevronDown,
+  Sun, Moon,
 } from '@lucide/vue'
 import { Instagram, Facebook, Youtube, Tiktok } from './socialIcons'
 
@@ -52,6 +53,8 @@ export const ICONS: Record<string, Component> = {
   'trash-2': Trash2,
   'chevron-up': ChevronUp,
   'chevron-down': ChevronDown,
+  'sun': Sun,
+  'moon': Moon,
 }
 
 export type IconName = keyof typeof ICONS
