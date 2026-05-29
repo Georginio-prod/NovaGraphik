@@ -26,3 +26,11 @@ dist-ssr
 # Nuxt UI auto-generated
 auto-imports.d.ts
 components.d.ts
+
+# Design system handoff (reference only, not committed)
+.design-ref
+
+# Local env
+.env
+.env.local
+.env.*.local
