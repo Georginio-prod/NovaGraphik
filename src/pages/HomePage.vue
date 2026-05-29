@@ -10,6 +10,8 @@ import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import ServiceCard from '@/components/sections/ServiceCard.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 import CmsContentSection from '@/components/sections/CmsContentSection.vue'
+import TeamOrgChart from '@/components/sections/TeamOrgChart.vue'
+import { useTeam } from '@/composables/useTeam'
 
 const { isMobile, isTablet } = useViewport()
 
@@ -23,11 +25,6 @@ const SERVICES: [string, string, string][] = [
   ['monitor', 'Web & UX/UI', 'Maquettes de sites vitrine & e-commerce.'],
   ['mail', 'Email marketing', 'Design de campagnes & signatures mail.'],
 ]
-const TEAM: [string, string, number][] = [
-  ['AMEGNAGLO K.S', 'Graphiste Designer', 0],
-  ['TAMEGNON K.K', 'Monteur vidéo · YouTube', 1],
-  ['GEORGE', 'Web designer', 2],
-]
 
 const servicesCols = computed(() =>
   isMobile.value || isTablet.value ? 'repeat(2,1fr)' : 'repeat(4,1fr)',
@@ -35,7 +32,11 @@ const servicesCols = computed(() =>
 
 const site = useSiteContent('home')
 const { customSections } = site
-onMounted(site.load)
+const { members: teamMembers, load: loadTeam } = useTeam()
+onMounted(() => {
+  site.load()
+  loadTeam()
+})
 
 const HERO_TITLE_DEFAULT = "L'essence du raffinement visuel."
 const HERO_SUB_DEFAULT =
@@ -141,7 +142,7 @@ const heroParts = computed(() => {
       </NContainer>
     </section>
 
-    <section v-if="site.has('Équipe')" class="py-16 tab:py-24 bg-nova-fog">
+    <section v-if="site.has('Équipe') && teamMembers.length" id="equipe" class="py-16 tab:py-24 bg-nova-fog scroll-mt-20">
       <NContainer>
         <NSectionHeader
           eyebrow="Qui sommes-nous"
@@ -149,16 +150,7 @@ const heroParts = computed(() => {
           align="center"
           :intro="site.body('Équipe', TEAM_INTRO_DEFAULT)"
         />
-        <div
-          class="grid gap-6 mt-8 tab:mt-12"
-          :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'"
-        >
-          <div v-for="(t, i) in TEAM" :key="t[0]" v-reveal="i * 90" class="text-center">
-            <NPlaceholder :idx="t[2]" :height="260" />
-            <h3 class="font-display text-[22px] font-semibold my-[18px_4px] text-fg-1">{{ t[0] }}</h3>
-            <NEyebrow class="text-[11px]">{{ t[1] }}</NEyebrow>
-          </div>
-        </div>
+        <TeamOrgChart :members="teamMembers" />
       </NContainer>
     </section>
 
