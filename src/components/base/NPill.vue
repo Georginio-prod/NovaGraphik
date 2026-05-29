@@ -1,40 +1,18 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ active?: boolean; accent?: boolean }>(), {
-  active: false,
-  accent: false,
-})
+defineProps<{ active?: boolean; accent?: boolean }>()
 </script>
 
 <template>
-  <button class="n-pill" :class="{ active, accent }">
+  <button
+    class="font-sans text-[11.5px] font-semibold tracking-wider uppercase px-[15px] py-[7px] rounded-full cursor-pointer transition-all duration-nova ease-nova border"
+    :class="
+      accent
+        ? 'border-transparent bg-nova-lime text-[#042b16]'
+        : active
+          ? 'border-transparent bg-nova-navy text-white'
+          : 'border-line-strong bg-nova-surface text-fg-2 hover:border-nova-teal-300'
+    "
+  >
     <slot />
   </button>
 </template>
-
-<style scoped>
-.n-pill {
-  font-family: var(--font-sans);
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 7px 15px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all var(--dur) var(--ease-out);
-  border: 1px solid var(--border-2);
-  background: #fff;
-  color: var(--fg-2);
-}
-.n-pill:hover { border-color: var(--nova-teal-300); }
-.n-pill.active {
-  border-color: transparent;
-  background: var(--nova-navy);
-  color: #fff;
-}
-.n-pill.accent {
-  border-color: transparent;
-  background: var(--nova-lime);
-  color: #042b16;
-}
-</style>
