@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useViewport } from '@/composables/useViewport'
+import { useSiteContent } from '@/composables/useSiteContent'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
@@ -30,6 +31,33 @@ const TEAM: [string, string, number][] = [
 const servicesCols = computed(() =>
   isMobile.value || isTablet.value ? 'repeat(2,1fr)' : 'repeat(4,1fr)',
 )
+
+// Editable content from the dashboard (falls back to design defaults).
+const content = useSiteContent('home')
+onMounted(content.load)
+
+const HERO_TITLE_DEFAULT = "L'essence du raffinement visuel."
+const HERO_SUB_DEFAULT =
+  "Nous accompagnons les entreprises, marques et particuliers dans la création d'une communication visuelle forte, moderne et impactante."
+const SERVICES_TITLE_DEFAULT = 'Tout ce qui est lié au digital'
+const SERVICES_INTRO_DEFAULT =
+  "De l'identité de marque au motion design, nous couvrons l'ensemble de votre communication visuelle."
+const PORTFOLIO_TITLE_DEFAULT = 'Notre univers créatif'
+const TEAM_TITLE_DEFAULT = "L'équipe Nova"
+const TEAM_INTRO_DEFAULT =
+  'Une équipe passionnée qui met sa créativité et son sens du détail au service de votre réussite.'
+
+// Split the hero title so the "raffinement" word keeps its italic-lime accent.
+const heroParts = computed(() => {
+  const t = content.title('Hero', HERO_TITLE_DEFAULT)
+  const m = t.match(/raffinement/i)
+  if (!m || m.index === undefined) return { before: t, accent: '', after: '' }
+  return {
+    before: t.slice(0, m.index),
+    accent: t.slice(m.index, m.index + m[0].length),
+    after: t.slice(m.index + m[0].length),
+  }
+})
 </script>
 
 <template>
@@ -41,12 +69,10 @@ const servicesCols = computed(() =>
         <div class="hero-inner" :class="{ 'is-mobile': isMobile }">
           <NEyebrow on-dark class="nova-enter nova-enter-1" style="margin-bottom: 22px;">Agence créative · Communication visuelle</NEyebrow>
           <h1 class="hero-title nova-enter nova-enter-2">
-            L'essence du<br /><span class="accent">raffinement</span> visuel.
+            <template v-if="heroParts.accent">{{ heroParts.before }}<br /><span class="accent">{{ heroParts.accent }}</span>{{ heroParts.after }}</template>
+            <template v-else>{{ heroParts.before }}</template>
           </h1>
-          <p class="hero-sub nova-enter nova-enter-3">
-            Nous accompagnons les entreprises, marques et particuliers dans la création
-            d'une communication visuelle forte, moderne et impactante.
-          </p>
+          <p class="hero-sub nova-enter nova-enter-3">{{ content.body('Hero', HERO_SUB_DEFAULT) }}</p>
           <div class="hero-cta nova-enter nova-enter-4">
             <NButton variant="accent" size="lg" icon="arrow-right" to="/contact">Demander un devis</NButton>
             <NButton variant="ghostDark" size="lg" to="/portfolios">Découvrir nos services</NButton>
@@ -60,8 +86,8 @@ const servicesCols = computed(() =>
       <NContainer>
         <NSectionHeader
           eyebrow="Nos services"
-          title="Tout ce qui est lié au digital"
-          intro="De l'identité de marque au motion design, nous couvrons l'ensemble de votre communication visuelle."
+          :title="content.title('Services', SERVICES_TITLE_DEFAULT)"
+          :intro="content.body('Services', SERVICES_INTRO_DEFAULT)"
         />
         <div class="svc-grid" :style="{ gridTemplateColumns: servicesCols }">
           <ServiceCard
@@ -80,7 +106,7 @@ const servicesCols = computed(() =>
     <section class="sec teaser">
       <NContainer>
         <div class="teaser-head">
-          <NSectionHeader eyebrow="Portfolios" title="Notre univers créatif" />
+          <NSectionHeader eyebrow="Portfolios" :title="content.title('Portfolios', PORTFOLIO_TITLE_DEFAULT)" />
           <NButton v-if="!isMobile" variant="ghost" icon="arrow-right" to="/portfolios">Voir tout</NButton>
         </div>
         <div class="mosaic" :class="{ 'is-mobile': isMobile }">
@@ -102,13 +128,13 @@ const servicesCols = computed(() =>
     </section>
 
     <!-- TEAM -->
-    <section class="sec team">
+    <section v-if="content.has('Équipe')" class="sec team">
       <NContainer>
         <NSectionHeader
           eyebrow="Qui sommes-nous"
-          title="L'équipe Nova"
+          :title="content.title('Équipe', TEAM_TITLE_DEFAULT)"
           align="center"
-          intro="Une équipe passionnée qui met sa créativité et son sens du détail au service de votre réussite."
+          :intro="content.body('Équipe', TEAM_INTRO_DEFAULT)"
         />
         <div class="team-grid" :class="{ 'is-mobile': isMobile }">
           <div v-for="(t, i) in TEAM" :key="t[0]" v-reveal="i * 90" class="member">

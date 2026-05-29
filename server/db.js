@@ -44,10 +44,10 @@ export function seed() {
   if (c === 0) {
     const ins = db.prepare('INSERT INTO sections (page, type, title, body, visible, position) VALUES (?, ?, ?, ?, ?, ?)')
     const rows = [
-      ['home', 'Hero', "L'essence du raffinement visuel.", 'Nous accompagnons les marques dans une communication forte et moderne.', 1, 0],
-      ['home', 'Services', 'Tout ce qui est lié au digital', 'Identité, motion design, web, photo & reportage.', 1, 1],
+      ['home', 'Hero', "L'essence du raffinement visuel.", "Nous accompagnons les entreprises, marques et particuliers dans la création d'une communication visuelle forte, moderne et impactante.", 1, 0],
+      ['home', 'Services', 'Tout ce qui est lié au digital', "De l'identité de marque au motion design, nous couvrons l'ensemble de votre communication visuelle.", 1, 1],
       ['home', 'Portfolios', 'Notre univers créatif', 'Une sélection de nos réalisations récentes.', 1, 2],
-      ['home', 'Équipe', "L'équipe Nova", 'Trois talents au service de votre réussite.', 0, 3],
+      ['home', 'Équipe', "L'équipe Nova", 'Une équipe passionnée qui met sa créativité et son sens du détail au service de votre réussite.', 1, 3],
     ]
     for (const r of rows) ins.run(...r)
     console.log('[seed] sections de la page d’accueil initialisées')
