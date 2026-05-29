@@ -15,9 +15,9 @@ const { isMobile } = useViewport()
   <section class="banner">
     <img src="/assets/compass-mark-white.png" alt="" class="mark" />
     <div class="inner" :class="{ 'is-mobile': isMobile }">
-      <NEyebrow on-dark style="margin-bottom: 18px;">{{ eyebrow }}</NEyebrow>
-      <h1 class="title">{{ title }}</h1>
-      <p v-if="intro" class="intro">{{ intro }}</p>
+      <NEyebrow on-dark class="nova-enter nova-enter-1" style="margin-bottom: 18px;">{{ eyebrow }}</NEyebrow>
+      <h1 class="title nova-enter nova-enter-2">{{ title }}</h1>
+      <p v-if="intro" class="intro nova-enter nova-enter-3">{{ intro }}</p>
     </div>
   </section>
 </template>

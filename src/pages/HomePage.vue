@@ -39,15 +39,15 @@ const servicesCols = computed(() =>
       <img src="/assets/compass-mark-white.png" alt="" class="hero-mark" />
       <NContainer>
         <div class="hero-inner" :class="{ 'is-mobile': isMobile }">
-          <NEyebrow on-dark style="margin-bottom: 22px;">Agence créative · Communication visuelle</NEyebrow>
-          <h1 class="hero-title">
+          <NEyebrow on-dark class="nova-enter nova-enter-1" style="margin-bottom: 22px;">Agence créative · Communication visuelle</NEyebrow>
+          <h1 class="hero-title nova-enter nova-enter-2">
             L'essence du<br /><span class="accent">raffinement</span> visuel.
           </h1>
-          <p class="hero-sub">
+          <p class="hero-sub nova-enter nova-enter-3">
             Nous accompagnons les entreprises, marques et particuliers dans la création
             d'une communication visuelle forte, moderne et impactante.
           </p>
-          <div class="hero-cta">
+          <div class="hero-cta nova-enter nova-enter-4">
             <NButton variant="accent" size="lg" icon="arrow-right" to="/contact">Demander un devis</NButton>
             <NButton variant="ghostDark" size="lg" to="/portfolios">Découvrir nos services</NButton>
           </div>
@@ -65,9 +65,9 @@ const servicesCols = computed(() =>
         />
         <div class="svc-grid" :style="{ gridTemplateColumns: servicesCols }">
           <ServiceCard
-            v-for="s in SERVICES"
+            v-for="(s, i) in SERVICES"
             :key="s[1]"
-            v-reveal
+            v-reveal="i * 60"
             :icon="s[0]"
             :title="s[1]"
             :desc="s[2]"
@@ -111,7 +111,7 @@ const servicesCols = computed(() =>
           intro="Une équipe passionnée qui met sa créativité et son sens du détail au service de votre réussite."
         />
         <div class="team-grid" :class="{ 'is-mobile': isMobile }">
-          <div v-for="t in TEAM" :key="t[0]" v-reveal class="member">
+          <div v-for="(t, i) in TEAM" :key="t[0]" v-reveal="i * 90" class="member">
             <NPlaceholder :idx="t[2]" :height="260" radius="var(--r-lg)" />
             <h3 class="m-name">{{ t[0] }}</h3>
             <NEyebrow style="font-size: 11px;">{{ t[1] }}</NEyebrow>
