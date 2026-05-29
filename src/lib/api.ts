@@ -53,8 +53,36 @@ export interface Section {
   id: number
   page: string
   type: string
+  template: string
   title: string
   body: string
+  icon: string
+  image: string
+  data: Record<string, any>
   visible: number
   position: number
+}
+
+export interface TeamMember {
+  id: number
+  name: string
+  role: string
+  bio: string
+  photo: string
+  slug: string
+  parent_id: number | null
+  position: number
+  visible: number
+}
+
+export interface PortfolioItem {
+  id: number
+  title: string
+  slug: string
+  category: string
+  description: string
+  cover_image: string
+  images: string[]
+  position: number
+  visible: number
 }

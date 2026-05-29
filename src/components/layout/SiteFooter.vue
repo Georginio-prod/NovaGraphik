@@ -1,21 +1,31 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { useViewport } from '@/composables/useViewport'
+import { useSettings } from '@/composables/useSettings'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
 
 const { isMobile } = useViewport()
+const { get, load } = useSettings()
+onMounted(load)
 
-const contacts: [string, string][] = [
-  ['mail', 'Novagraphiksat@gmail.com'],
-  ['phone', '+228 97 99 63 46'],
-  ['map-pin', 'Lomé, Togo'],
-]
-const socials: [string, string][] = [
-  ['instagram', 'Instagram'],
-  ['facebook', 'Facebook'],
-  ['youtube', 'YouTube'],
-  ['tiktok', 'TikTok'],
-]
+const contacts = computed<[string, string][]>(() => [
+  ['mail', get('contact_email', 'Novagraphiksat@gmail.com')],
+  ['phone', get('contact_phone', '+228 97 99 63 46')],
+  ['map-pin', get('contact_location', 'Lomé, Togo')],
+])
+const socials = computed<[string, string, string][]>(() =>
+  (
+    [
+      ['instagram', 'Instagram', get('social_instagram')],
+      ['facebook', 'Facebook', get('social_facebook')],
+      ['youtube', 'YouTube', get('social_youtube')],
+      ['tiktok', 'TikTok', get('social_tiktok')],
+    ] as [string, string, string][]
+  ).filter((s) => s[2]),
+)
+const tagline = computed(() => get('tagline', "L'essence du raffinement").toUpperCase())
+const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
 </script>
 
 <template>
@@ -52,9 +62,12 @@ const socials: [string, string][] = [
         <div>
           <div class="font-glyphic text-[11px] font-semibold tracking-[0.18em] uppercase text-nova-lime mb-4">Réseaux sociaux</div>
           <a
-            v-for="[icon, label] in socials"
+            v-for="[icon, label, href] in socials"
             :key="label"
-            class="flex items-center gap-2 text-[13.5px] mb-[11px] cursor-pointer text-fg-on-dark-2 transition-colors duration-nova hover:text-white"
+            :href="href"
+            target="_blank"
+            rel="noopener"
+            class="flex items-center gap-2 text-[13.5px] mb-[11px] cursor-pointer text-fg-on-dark-2 transition-colors duration-nova hover:text-white no-underline"
           >
             <NIcon :name="icon" :size="15" color="#0cf25d" />{{ label }}
           </a>
@@ -75,8 +88,8 @@ const socials: [string, string][] = [
         class="pt-5 border-t border-white/12 flex justify-between items-center flex-wrap gap-3"
         :class="isMobile ? 'mt-9' : 'mt-14'"
       >
-        <span class="font-glyphic text-[11px] tracking-[0.22em] text-fg-on-dark-3">L'ESSENCE DU RAFFINEMENT</span>
-        <span class="text-xs text-fg-on-dark-3">© 2026 Nova Graphik. Tous droits réservés.</span>
+        <span class="font-glyphic text-[11px] tracking-[0.22em] text-fg-on-dark-3">{{ tagline }}</span>
+        <span class="text-xs text-fg-on-dark-3">© 2026 {{ siteTitle }}. Tous droits réservés.</span>
       </div>
     </div>
   </footer>

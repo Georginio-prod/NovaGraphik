@@ -10,6 +10,9 @@ import {
   GripVertical, Phone, MapPin, Quote,
   Sparkles, Menu, X, LogOut, Lock, Save, Trash2, ChevronUp, ChevronDown,
   Sun, Moon,
+  Briefcase, Star, Heart, Award, Zap, Layers, PenTool, Globe, Rocket,
+  Lightbulb, Megaphone, Film, Video, Smartphone, ShoppingBag, TrendingUp,
+  Compass, Target, Gem, Crown, Brush, ShieldCheck, Pencil, Wand2,
 } from '@lucide/vue'
 import { Instagram, Facebook, Youtube, Tiktok } from './socialIcons'
 
@@ -55,6 +58,39 @@ export const ICONS: Record<string, Component> = {
   'chevron-down': ChevronDown,
   'sun': Sun,
   'moon': Moon,
+  'briefcase': Briefcase,
+  'star': Star,
+  'heart': Heart,
+  'award': Award,
+  'zap': Zap,
+  'layers': Layers,
+  'pen-tool': PenTool,
+  'globe': Globe,
+  'rocket': Rocket,
+  'lightbulb': Lightbulb,
+  'megaphone': Megaphone,
+  'film': Film,
+  'video': Video,
+  'smartphone': Smartphone,
+  'shopping-bag': ShoppingBag,
+  'trending-up': TrendingUp,
+  'compass': Compass,
+  'target': Target,
+  'gem': Gem,
+  'crown': Crown,
+  'brush': Brush,
+  'shield-check': ShieldCheck,
+  'pencil': Pencil,
+  'wand-2': Wand2,
 }
 
 export type IconName = keyof typeof ICONS
+
+// Curated subset offered in the dashboard icon picker (content/service icons).
+export const CONTENT_ICONS: string[] = [
+  'palette', 'brush', 'pen-tool', 'pencil', 'printer', 'share-2', 'megaphone',
+  'clapperboard', 'film', 'video', 'camera', 'box', 'layers', 'monitor',
+  'smartphone', 'globe', 'shopping-bag', 'mail', 'sparkles', 'star', 'award',
+  'gem', 'crown', 'rocket', 'zap', 'lightbulb', 'target', 'trending-up',
+  'heart', 'shield-check', 'briefcase', 'users', 'compass', 'wand-2',
+]

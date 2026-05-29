@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useViewport } from '@/composables/useViewport'
+import { useSettings } from '@/composables/useSettings'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
@@ -11,13 +12,25 @@ import NSectionHeader from '@/components/base/NSectionHeader.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 
 const { isMobile } = useViewport()
+const { get, load } = useSettings()
+onMounted(load)
 
 const SERVICES_OPTS = ['Identité visuelle', 'Supports imprimés', 'Réseaux sociaux', 'Motion design', '3D / 2D', 'Photo / Reportage', 'Site web (UX/UI)', 'Autre']
-const CONTACTS: [string, string, string][] = [
-  ['mail', 'E-mail', 'Novagraphiksat@gmail.com'],
-  ['phone', 'Téléphone', '+228 97 99 63 46'],
-  ['map-pin', 'Localisation', 'Lomé, Togo'],
-]
+const CONTACTS = computed<[string, string, string][]>(() => [
+  ['mail', 'E-mail', get('contact_email', 'Novagraphiksat@gmail.com')],
+  ['phone', 'Téléphone', get('contact_phone', '+228 97 99 63 46')],
+  ['map-pin', 'Localisation', get('contact_location', 'Lomé, Togo')],
+])
+const socials = computed<[string, string][]>(() =>
+  (
+    [
+      ['instagram', get('social_instagram')],
+      ['facebook', get('social_facebook')],
+      ['youtube', get('social_youtube')],
+      ['tiktok', get('social_tiktok')],
+    ] as [string, string][]
+  ).filter((s) => s[1]),
+)
 
 const sel = ref('Identité visuelle')
 const sent = ref(false)
@@ -81,11 +94,14 @@ function reset() {
             </div>
             <div class="mt-8 flex gap-3">
               <a
-                v-for="s in ['instagram', 'facebook', 'youtube', 'tiktok']"
-                :key="s"
-                class="w-[42px] h-[42px] rounded-md bg-nova-navy grid place-items-center cursor-pointer"
+                v-for="[icon, href] in socials"
+                :key="icon"
+                :href="href"
+                target="_blank"
+                rel="noopener"
+                class="w-[42px] h-[42px] rounded-md bg-nova-navy grid place-items-center cursor-pointer hover:bg-nova-navy-700 transition-colors duration-nova"
               >
-                <NIcon :name="s" :size="18" color="#fff" />
+                <NIcon :name="icon" :size="18" color="#fff" />
               </a>
             </div>
           </div>
