@@ -38,3 +38,6 @@ components.d.ts
 # SQLite database (created at runtime)
 server/*.sqlite
 server/*.sqlite-*
+
+# Uploaded media (created at runtime)
+server/uploads
