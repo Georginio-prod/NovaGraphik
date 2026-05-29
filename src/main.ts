@@ -19,6 +19,7 @@ const router = createRouter({
     { path: '/contact', name: 'contact', component: () => import('./pages/ContactPage.vue') },
     { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue') },
     { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue') },
+    { path: '/equipe/:slug', name: 'member', component: () => import('./pages/MemberPage.vue') },
     { path: '/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true } },
     {
       path: '/dashboard',
@@ -28,7 +29,7 @@ const router = createRouter({
         { path: '', name: 'dashboard', component: () => import('./pages/dashboard/DashboardOverview.vue') },
         { path: 'pages', name: 'dash-pages', component: () => import('./pages/dashboard/DashboardPages.vue') },
         { path: 'portfolio', name: 'dash-portfolio', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Portfolios' } },
-        { path: 'team', name: 'dash-team', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Équipe' } },
+        { path: 'team', name: 'dash-team', component: () => import('./pages/dashboard/DashboardTeam.vue') },
         { path: 'blogs', name: 'dash-blogs', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Blogs' } },
         { path: 'partenaires', name: 'dash-partenaires', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Partenaires' } },
         { path: 'tarifs', name: 'dash-tarifs', component: () => import('./pages/dashboard/DashboardComingSoon.vue'), meta: { title: 'Tarifs' } },
