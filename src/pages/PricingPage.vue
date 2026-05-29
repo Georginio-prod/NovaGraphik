@@ -64,9 +64,9 @@ const PRICE_GROUPS: [string, string, [string, string, string][]][] = [
         <NSectionHeader eyebrow="Formules · Identité visuelle" title="Choisissez votre formule" align="center" />
         <div class="formules" :class="{ 'is-mobile': isMobile }">
           <div
-            v-for="f in FORMULES"
+            v-for="(f, i) in FORMULES"
             :key="f[0]"
-            v-reveal
+            v-reveal="i * 80"
             class="formule"
             :class="{ hot: f[3] }"
           >

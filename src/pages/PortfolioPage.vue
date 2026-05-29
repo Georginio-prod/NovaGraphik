@@ -42,7 +42,7 @@ const items = computed(() => (cat.value === 'Tout' ? PF_ITEMS : PF_ITEMS.filter(
           >{{ c }}</NPill>
         </div>
         <div class="pf-grid" :class="{ 'is-mobile': isMobile }">
-          <div v-for="it in items" :key="it[0]" v-reveal class="pf-card">
+          <div v-for="(it, i) in items" :key="it[0]" v-reveal="(i % 3) * 70" class="pf-card">
             <div class="img">
               <NPlaceholder :idx="it[2]" :height="230" radius="0" />
               <div class="overlay">

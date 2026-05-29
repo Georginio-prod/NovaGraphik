@@ -40,7 +40,7 @@ const TESTIMONIALS: [string, string, string][] = [
       <NContainer>
         <NSectionHeader eyebrow="Avis clients" title="Ce que disent nos clients" align="center" />
         <div class="testi-grid" :class="{ 'is-mobile': isMobile }">
-          <div v-for="(t, i) in TESTIMONIALS" :key="i" v-reveal class="testi">
+          <div v-for="(t, i) in TESTIMONIALS" :key="i" v-reveal="i * 80" class="testi">
             <NIcon name="quote" :size="30" color="var(--nova-lime)" />
             <p class="quote">« {{ t[0] }} »</p>
             <div class="who">

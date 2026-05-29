@@ -46,7 +46,7 @@ const ARTICLES_SM: [string, string, string, number][] = [
 
         <!-- 2-up big cards -->
         <div class="grid-2" :class="{ 'is-mobile': isMobile }">
-          <article v-for="a in ARTICLES.slice(1)" :key="a[0]" v-reveal class="art-card">
+          <article v-for="(a, i) in ARTICLES.slice(1)" :key="a[0]" v-reveal="i * 80" class="art-card">
             <NPlaceholder :idx="a[4]" :height="180" radius="0" />
             <div class="ac-body">
               <NEyebrow style="font-size: 10px;">{{ a[2] }} · {{ a[3] }}</NEyebrow>
@@ -58,7 +58,7 @@ const ARTICLES_SM: [string, string, string, number][] = [
 
         <!-- 4-up small cards -->
         <div class="grid-4" :class="{ 'is-mobile': isMobile }">
-          <article v-for="a in ARTICLES_SM" :key="a[0]" v-reveal class="art-sm">
+          <article v-for="(a, i) in ARTICLES_SM" :key="a[0]" v-reveal="i * 70" class="art-sm">
             <NPlaceholder :idx="a[3]" :height="120" />
             <div class="as-body">
               <NEyebrow style="font-size: 9.5px;">{{ a[1] }} · {{ a[2] }}</NEyebrow>
