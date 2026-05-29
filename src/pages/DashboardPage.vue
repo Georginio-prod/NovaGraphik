@@ -1,6 +1,16 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 import NIcon from '@/components/base/NIcon.vue'
+import NButton from '@/components/base/NButton.vue'
+
+const router = useRouter()
+const { user, logout } = useAuth()
+
+function signOut() {
+  logout()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -9,12 +19,13 @@ import NIcon from '@/components/base/NIcon.vue'
     <p class="eyebrow">Tableau de bord</p>
     <h1>Espace d'administration</h1>
     <p class="lead">
-      L'éditeur de contenu (sections, titres, menus) arrive sur la branche dédiée,
-      protégé par authentification.
+      Connecté en tant que <strong>{{ user?.email }}</strong>.
+      L'éditeur de contenu (sections, titres, visibilité) arrive sur la prochaine étape.
     </p>
-    <RouterLink to="/" class="back">
-      <NIcon name="arrow-left" :size="16" /> Retour au site
-    </RouterLink>
+    <div class="actions">
+      <RouterLink to="/" class="ghost"><NIcon name="arrow-left" :size="16" /> Voir le site</RouterLink>
+      <NButton variant="accent" icon="log-out" @click="signOut">Se déconnecter</NButton>
+    </div>
   </div>
 </template>
 
@@ -46,8 +57,10 @@ h1 {
   margin: 0 0 16px;
   color: #fff;
 }
-.lead { color: var(--fg-on-dark-2); max-width: 440px; margin: 0 0 32px; }
-.back {
+.lead { color: var(--fg-on-dark-2); max-width: 460px; margin: 0 0 32px; }
+.lead strong { color: #fff; }
+.actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.ghost {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -58,5 +71,5 @@ h1 {
   padding: 11px 18px;
   font-size: 13px;
 }
-.back:hover { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+.ghost:hover { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
 </style>
