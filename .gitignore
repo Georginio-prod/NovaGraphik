@@ -39,5 +39,6 @@ components.d.ts
 server/*.sqlite
 server/*.sqlite-*
 
-# Uploaded media (created at runtime)
-server/uploads
+# Uploaded media (created at runtime — only the seed reference images are kept)
+server/uploads/*
+!server/uploads/wp-*

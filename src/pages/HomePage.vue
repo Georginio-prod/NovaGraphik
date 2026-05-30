@@ -11,6 +11,7 @@ import ServiceCard from '@/components/sections/ServiceCard.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 import CmsContentSection from '@/components/sections/CmsContentSection.vue'
 import TeamOrgChart from '@/components/sections/TeamOrgChart.vue'
+import TeamDecisionBoard from '@/components/sections/TeamDecisionBoard.vue'
 import { useTeam } from '@/composables/useTeam'
 
 const { isMobile, isTablet } = useViewport()
@@ -150,7 +151,21 @@ const heroParts = computed(() => {
           align="center"
           :intro="site.body('Équipe', TEAM_INTRO_DEFAULT)"
         />
-        <TeamOrgChart :members="teamMembers" />
+
+        <div class="mt-14 tab:mt-20">
+          <div class="text-center mb-8">
+            <div class="font-glyphic text-xs font-semibold tracking-[0.22em] uppercase text-nova-teal mb-2">Quelle équipe vous faut-il ?</div>
+            <p class="text-fg-3 text-sm max-w-[520px] mx-auto m-0">
+              Suivez l'arbre selon votre besoin — chaque issue correspond à une configuration possible.
+            </p>
+          </div>
+          <TeamDecisionBoard />
+        </div>
+
+        <div class="mt-16 tab:mt-20">
+          <div class="font-glyphic text-xs font-semibold tracking-[0.22em] uppercase text-nova-teal text-center mb-2">Notre équipe complète</div>
+          <TeamOrgChart :members="teamMembers" />
+        </div>
       </NContainer>
     </section>
 

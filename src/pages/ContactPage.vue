@@ -32,8 +32,13 @@ const socials = computed<[string, string][]>(() =>
   ).filter((s) => s[1]),
 )
 
-const sel = ref('Identité visuelle')
+const sel = ref<string[]>(['Identité visuelle'])
 const sent = ref(false)
+function toggleService(s: string) {
+  const i = sel.value.indexOf(s)
+  if (i >= 0) sel.value.splice(i, 1)
+  else sel.value.push(s)
+}
 const name = ref('')
 const email = ref('')
 const message = ref('')
@@ -61,7 +66,7 @@ function reset() {
   name.value = ''
   email.value = ''
   message.value = ''
-  sel.value = 'Identité visuelle'
+  sel.value = ['Identité visuelle']
   errors.value = {}
 }
 </script>
@@ -128,9 +133,9 @@ function reset() {
                 <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
               </div>
               <div class="mt-4">
-                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service</label>
+                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service <span class="font-normal text-fg-3 normal-case tracking-normal">(choix multiple)</span></label>
                 <div class="flex flex-wrap gap-2 mt-2">
-                  <NPill v-for="s in SERVICES_OPTS" :key="s" :active="sel === s" @click="sel = s">{{ s }}</NPill>
+                  <NPill v-for="s in SERVICES_OPTS" :key="s" :active="sel.includes(s)" @click="toggleService(s)">{{ s }}</NPill>
                 </div>
               </div>
               <div class="mt-4">
