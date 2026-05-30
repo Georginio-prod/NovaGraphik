@@ -1,10 +1,10 @@
-import { getToken } from '@/lib/api'
+import { getAccessToken } from '@/lib/api'
 
 // Uploads a file to the media endpoint and returns its public URL (/uploads/..).
 export async function uploadImage(file: File): Promise<string> {
   const fd = new FormData()
   fd.append('file', file)
-  const token = getToken()
+  const token = await getAccessToken()
   const res = await fetch('/api/admin/upload', {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},

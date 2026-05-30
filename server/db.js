@@ -1,5 +1,4 @@
 import { DatabaseSync } from 'node:sqlite'
-import bcrypt from 'bcryptjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -97,17 +96,9 @@ export function uniqueSlug(table, base, ignoreId = null) {
   }
 }
 
-// First-run seed: admin account, home sections, settings, team and portfolio.
+// First-run seed: home sections, settings, team and portfolio.
+// Auth users are managed by Supabase, not in this SQLite database.
 export function seed() {
-  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@novagraphik.fr').toLowerCase()
-  const adminPassword = process.env.ADMIN_PASSWORD || 'NovaAdmin2026!'
-
-  if (!db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail)) {
-    const hash = bcrypt.hashSync(adminPassword, 10)
-    db.prepare('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)').run(adminEmail, hash, 'admin')
-    console.log(`[seed] admin créé → ${adminEmail} / ${adminPassword}  (changez le mot de passe en production)`)
-  }
-
   if (db.prepare('SELECT COUNT(*) AS c FROM sections WHERE page = ?').get('home').c === 0) {
     const ins = db.prepare(
       'INSERT INTO sections (page, type, template, title, body, visible, position) VALUES (?, ?, ?, ?, ?, ?, ?)',

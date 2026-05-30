@@ -68,13 +68,6 @@ function goM(path: string) {
 
       <div v-if="!isMobile" class="flex gap-3 items-center">
         <ThemeToggle />
-        <RouterLink
-          to="/dashboard"
-          class="w-[38px] h-[38px] rounded-sm border border-line-strong bg-nova-surface cursor-pointer grid place-items-center text-nova-navy transition-[border-color] duration-nova hover:border-nova-navy dark:text-nova-lime dark:hover:border-nova-lime"
-          title="Tableau de bord"
-        >
-          <NIcon name="layout-dashboard" :size="17" />
-        </RouterLink>
         <NButton variant="accent" size="sm" to="/contact">Demander un devis</NButton>
       </div>
 
@@ -100,14 +93,6 @@ function goM(path: string) {
       <div class="flex gap-2.5 mt-3.5 items-center">
         <ThemeToggle class="!w-11 !h-11 shrink-0" />
         <NButton variant="accent" block to="/contact" @click="open = false">Demander un devis</NButton>
-        <RouterLink
-          to="/dashboard"
-          class="w-11 shrink-0 rounded-sm border border-line-strong bg-nova-surface cursor-pointer grid place-items-center text-nova-navy dark:text-nova-lime"
-          title="Tableau de bord"
-          @click="open = false"
-        >
-          <NIcon name="layout-dashboard" :size="18" />
-        </RouterLink>
       </div>
     </div>
   </header>

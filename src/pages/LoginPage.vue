@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { ApiError } from '@/lib/api'
 import NButton from '@/components/base/NButton.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
@@ -23,9 +22,9 @@ async function submit() {
   try {
     await login(email.value.trim(), password.value)
     const redirect = route.query.redirect
-    router.push(typeof redirect === 'string' ? redirect : '/dashboard')
+    router.push(typeof redirect === 'string' ? redirect : '/admin')
   } catch (e) {
-    error.value = e instanceof ApiError ? e.message : 'Connexion impossible. Réessayez.'
+    error.value = e instanceof Error ? e.message : 'Connexion impossible. Réessayez.'
   } finally {
     loading.value = false
   }

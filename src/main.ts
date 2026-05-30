@@ -21,9 +21,9 @@ const router = createRouter({
     { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue') },
     { path: '/equipe/:slug', name: 'member', component: () => import('./pages/MemberPage.vue') },
     { path: '/portfolio/:slug', name: 'project', component: () => import('./pages/ProjectPage.vue') },
-    { path: '/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true } },
+    { path: '/admin/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true } },
     {
-      path: '/dashboard',
+      path: '/admin',
       component: () => import('./pages/dashboard/DashboardLayout.vue'),
       meta: { bare: true, requiresAdmin: true },
       children: [
@@ -44,15 +44,15 @@ const router = createRouter({
   },
 })
 
-// Auth guard: the dashboard is reserved for authenticated admins.
+// Auth guard: the admin area is reserved for authenticated users (Supabase).
 router.beforeEach(async (to) => {
-  const { token, isAdmin, ensureSession } = useAuth()
-  if (token.value) await ensureSession()
-  if (to.meta.requiresAdmin && !isAdmin.value) {
-    return { path: '/login', query: { redirect: to.fullPath } }
+  const { isAuthenticated, ensureSession } = useAuth()
+  await ensureSession()
+  if (to.meta.requiresAdmin && !isAuthenticated.value) {
+    return { path: '/admin/login', query: { redirect: to.fullPath } }
   }
-  if (to.name === 'login' && isAdmin.value) {
-    return { path: '/dashboard' }
+  if (to.name === 'login' && isAuthenticated.value) {
+    return { path: '/admin' }
   }
   return true
 })

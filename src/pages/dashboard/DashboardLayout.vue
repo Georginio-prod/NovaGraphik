@@ -8,22 +8,22 @@ const router = useRouter()
 const { logout } = useAuth()
 
 const NAV: [string, string, string][] = [
-  ['layout-dashboard', "Vue d'ensemble", '/dashboard'],
-  ['file-text', 'Pages', '/dashboard/pages'],
-  ['image', 'Portfolios', '/dashboard/portfolio'],
-  ['users', 'Équipe', '/dashboard/team'],
-  ['pen-line', 'Blogs', '/dashboard/blogs'],
-  ['award', 'Partenaires', '/dashboard/partenaires'],
-  ['tag', 'Tarifs', '/dashboard/tarifs'],
-  ['settings', 'Réglages', '/dashboard/settings'],
+  ['layout-dashboard', "Vue d'ensemble", '/admin'],
+  ['file-text', 'Pages', '/admin/pages'],
+  ['image', 'Portfolios', '/admin/portfolio'],
+  ['users', 'Équipe', '/admin/team'],
+  ['pen-line', 'Blogs', '/admin/blogs'],
+  ['award', 'Partenaires', '/admin/partenaires'],
+  ['tag', 'Tarifs', '/admin/tarifs'],
+  ['settings', 'Réglages', '/admin/settings'],
 ]
 
 function isActive(path: string) {
-  return path === '/dashboard' ? route.path === '/dashboard' : route.path.startsWith(path)
+  return path === '/admin' ? route.path === '/admin' : route.path.startsWith(path)
 }
-function signOut() {
-  logout()
-  router.push('/login')
+async function signOut() {
+  await logout()
+  router.push('/admin/login')
 }
 </script>
 
@@ -33,7 +33,7 @@ function signOut() {
     <aside
       class="hidden min-[901px]:flex w-[248px] shrink-0 sticky top-0 h-screen box-border flex-col bg-nova-navy-900 text-white py-6 px-4"
     >
-      <RouterLink to="/dashboard">
+      <RouterLink to="/admin">
         <img src="/assets/logo-nova-mark-white.png" alt="Nova" class="w-[110px] mx-2 mb-7 mt-1.5" />
       </RouterLink>
       <nav class="flex flex-col gap-1">

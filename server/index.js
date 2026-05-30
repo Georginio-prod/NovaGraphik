@@ -1,14 +1,13 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import bcrypt from 'bcryptjs'
 import multer from 'multer'
 import { randomUUID } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { existsSync, mkdirSync } from 'node:fs'
 import { db, seed, slugify, uniqueSlug } from './db.js'
-import { signToken, requireAdmin } from './auth.js'
+import { requireAdmin } from './auth.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -34,22 +33,10 @@ function parsePf(row) {
   return row
 }
 
-/* ---------------------------------- Auth --------------------------------- */
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body || {}
-  if (!email || !password) return res.status(400).json({ error: 'Email et mot de passe requis' })
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(String(email).toLowerCase())
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-    return res.status(401).json({ error: 'Identifiants incorrects' })
-  }
-  res.json({ token: signToken(user), user: { id: user.id, email: user.email, role: user.role } })
-})
-
-app.get('/api/auth/me', requireAdmin, (req, res) => {
-  const user = db.prepare('SELECT id, email, role FROM users WHERE id = ?').get(req.user.sub)
-  if (!user) return res.status(404).json({ error: 'Compte introuvable' })
-  res.json({ user })
-})
+/* -------------------------------- Auth ----------------------------------
+   Sign-in is handled by Supabase on the frontend. The backend only verifies
+   the Supabase access token on /api/admin/* via requireAdmin (server/auth.js).
+   ------------------------------------------------------------------------ */
 
 /* -------------------------------- Uploads -------------------------------- */
 const uploadsDir = join(__dirname, 'uploads')
