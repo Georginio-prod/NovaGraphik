@@ -137,12 +137,13 @@ export function seed() {
       'INSERT INTO team_members (name, role, bio, slug, parent_id, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
     // [name, role, bio, parentName (null = root), position]
+    // Pyramidal hierarchy: 1 → 2 → 2 (grows as you add more members later).
     const team = [
       ['AMEGNAGLO K.S', 'Graphiste Designer de NOVA', "Direction artistique et identité visuelle. Logos, chartes graphiques et supports imprimés — Samuel met son œil et sa rigueur au service d'identités fortes, cohérentes et mémorables.", null, 0],
       ['TAMEGNON K.K', 'Monteur vidéo · short YouTube de NOVA', "Monteur vidéo et créateur de contenu. Spécialisé dans les formats courts, les capsules YouTube et les motion teasers pour les marques qui veulent capter l'attention en moins de 30 secondes.", 'AMEGNAGLO K.S', 1],
       ['GEORGE', 'Web designer de NOVA', 'Web designer chez Nova. Conçoit des interfaces élégantes, performantes et orientées conversion — sites vitrine, e-commerce et plateformes sur mesure.', 'AMEGNAGLO K.S', 2],
-      ['BANAWOYE Eliezer', 'Réalisateur · Cadreur · Monteur', "Réalisateur et chef opérateur. Cadreur, monteur et éclaireur — Eliezer signe la captation et la post-production des reportages, films corporate et clips musicaux de l'agence. Formation Bac+2 FLLA.", 'AMEGNAGLO K.S', 3],
-      ['FIA Yaovi Daniel', 'Responsable marketing & community manager', "Responsable marketing et community manager chez Nova. Gestionnaire des ressources humaines de formation, photographe et vidéaste, Daniel orchestre la stratégie de présence digitale et l'image de marque de l'agence. Aussi mannequin et musicien à ses heures.", 'AMEGNAGLO K.S', 4],
+      ['BANAWOYE Eliezer', 'Réalisateur · Cadreur · Monteur', "Réalisateur et chef opérateur. Cadreur, monteur et éclaireur — Eliezer signe la captation et la post-production des reportages, films corporate et clips musicaux de l'agence. Formation Bac+2 FLLA.", 'TAMEGNON K.K', 3],
+      ['FIA Yaovi Daniel', 'Responsable marketing & community manager', "Responsable marketing et community manager chez Nova. Gestionnaire des ressources humaines de formation, photographe et vidéaste, Daniel orchestre la stratégie de présence digitale et l'image de marque de l'agence. Aussi mannequin et musicien à ses heures.", 'GEORGE', 4],
     ]
     const idByName = {}
     for (const [name, role, bio, parentName, pos] of team) {
