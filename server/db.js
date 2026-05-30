@@ -105,11 +105,10 @@ export function seed() {
     )
     const rows = [
       ['home', 'Hero', 'hero', "L'essence du raffinement visuel.", "Nous accompagnons les entreprises, marques et particuliers dans la création d'une communication visuelle forte, moderne et impactante.", 1, 0],
-      ['home', 'Qui sommes-nous', 'text', 'Une agence créative au service des marques.', "Agence créative basée à Lomé, Nova Graphik conçoit l'identité visuelle des marques ambitieuses : direction artistique, design graphique, motion design, web et production audiovisuelle. Une équipe pluridisciplinaire, une exigence partagée — accompagner les marques à se démarquer dans l'univers digital.", 1, 1],
+      ['home', 'Qui sommes-nous', 'text', 'Une agence créative au service des marques.', "Agence créative basée à Lomé, Nova Graphik bâtit des identités visuelles fortes et durables — direction artistique, design graphique, motion design, web et production audiovisuelle. Notre ambition : devenir une référence en Afrique de l'Ouest en transformant les idées de nos clients en projets concrets, performants et porteurs de sens.", 1, 1],
       ['home', 'Services', 'services', 'Tout ce qui est lié au digital', "De l'identité de marque au motion design, nous couvrons l'ensemble de votre communication visuelle.", 1, 2],
-      ['home', 'Notre vision', 'text', 'Bâtir des identités fortes et durables.', "Devenir une agence de référence en Afrique de l'Ouest, reconnue pour la créativité, l'innovation et la qualité de ses réalisations. De la conception web au design graphique, en passant par l'audiovisuel et l'animation 2D/3D, nous aidons chaque marque à transformer ses idées en projets concrets et performants.", 1, 3],
-      ['home', 'Portfolios', 'portfolio', 'Notre univers créatif', 'Une sélection de nos réalisations récentes.', 1, 4],
-      ['home', 'Équipe', 'team', "L'équipe Nova", 'Une équipe pluridisciplinaire qui met sa créativité et son sens du détail au service de votre réussite.', 1, 5],
+      ['home', 'Portfolios', 'portfolio', 'Notre univers créatif', 'Une sélection de nos réalisations récentes.', 1, 3],
+      ['home', 'Équipe', 'team', "L'équipe Nova", 'Une équipe pluridisciplinaire qui met sa créativité et son sens du détail au service de votre réussite.', 1, 4],
     ]
     for (const r of rows) ins.run(...r)
     console.log('[seed] sections de la page d’accueil initialisées')

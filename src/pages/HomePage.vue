@@ -38,6 +38,12 @@ onMounted(() => {
   loadTeam()
 })
 
+// The "Qui sommes-nous" section is rendered right after the Hero, in a fixed
+// narrative slot — all other custom CMS sections still render after the team.
+const ABOUT_TYPE = 'Qui sommes-nous'
+const aboutSection = computed(() => customSections.value.find((s) => s.type === ABOUT_TYPE))
+const trailingSections = computed(() => customSections.value.filter((s) => s.type !== ABOUT_TYPE))
+
 const HERO_TITLE_DEFAULT = "L'essence du raffinement visuel."
 const HERO_SUB_DEFAULT =
   "Nous accompagnons les entreprises, marques et particuliers dans la création d'une communication visuelle forte, moderne et impactante."
@@ -88,6 +94,9 @@ const heroParts = computed(() => {
         </div>
       </NContainer>
     </section>
+
+    <!-- Qui sommes-nous (after Hero, before Services) -->
+    <CmsContentSection v-if="aboutSection" :section="aboutSection" />
 
     <section class="py-16 tab:py-24 bg-nova-paper">
       <NContainer>
@@ -145,7 +154,7 @@ const heroParts = computed(() => {
     <section v-if="site.has('Équipe') && teamMembers.length" id="equipe" class="py-16 tab:py-24 bg-nova-fog scroll-mt-20">
       <NContainer>
         <NSectionHeader
-          eyebrow="Qui sommes-nous"
+          eyebrow="Notre équipe"
           :title="site.title('Équipe', TEAM_TITLE_DEFAULT)"
           align="center"
           :intro="site.body('Équipe', TEAM_INTRO_DEFAULT)"
@@ -156,7 +165,7 @@ const heroParts = computed(() => {
     </section>
 
     <CmsContentSection
-      v-for="(s, i) in customSections"
+      v-for="(s, i) in trailingSections"
       :key="s.id"
       :section="s"
       :alt="i % 2 === 1"
