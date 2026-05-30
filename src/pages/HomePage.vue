@@ -10,6 +10,7 @@ import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import ServiceCard from '@/components/sections/ServiceCard.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 import CmsContentSection from '@/components/sections/CmsContentSection.vue'
+import AboutSection from '@/components/sections/AboutSection.vue'
 import TeamOrgChart from '@/components/sections/TeamOrgChart.vue'
 import { useTeam } from '@/composables/useTeam'
 
@@ -96,7 +97,7 @@ const heroParts = computed(() => {
     </section>
 
     <!-- Qui sommes-nous (after Hero, before Services) -->
-    <CmsContentSection v-if="aboutSection" :section="aboutSection" />
+    <AboutSection v-if="aboutSection" :section="aboutSection" :team-count="teamMembers.length" />
 
     <section class="py-16 tab:py-24 bg-nova-paper">
       <NContainer>
