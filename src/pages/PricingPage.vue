@@ -23,11 +23,13 @@ const PRICE_GROUPS: [string, string, [string, string, string][]][] = [
     ["Rebranding (refonte d'identité)", 'Modernisation complète de votre image visuelle', '30 000'],
   ]],
   ['Supports imprimés', 'printer', [
-    ['Carte de visite', 'Conception graphique professionnelle', '5 000'],
-    ['Carte de visite + impression', '100 exemplaires – papier premium 300g', '12 000 – 15 000'],
-    ['Flyer / Affiche A5 ou A4', 'Design publicitaire événement ou produit', '10 000 – 15 000'],
+    ['Carte de visite', 'Conception graphique seule (livrables HD + vectoriels)', '5 000'],
+    ['Carte de visite + impression', 'Conception + impression 300g finition laminée — 100 exemplaires', '15 000'],
+    ['Flyer A5 (conception + impression)', 'Conception + impression laminé tout fini A5 — 100 FCFA / unité (à partir de 500 ex.)', '50 000 / 500 ex.'],
+    ['Flyer A4 (conception + impression)', 'Conception + impression laminé tout fini A4 — 150 FCFA / unité (à partir de 500 ex.)', '75 000 / 500 ex.'],
     ['Brochure / Catalogue', 'Mise en page 4 à 12 pages', '25 000'],
-    ['Bannière / Roll-up / Kakemono', 'Création + fichier prêt à imprimer', '15 000'],
+    ['Kakémono / Roll-up', 'Conception + impression tout fini, prêt à exposer', '90 000'],
+    ['Bannière (création seule)', 'Création graphique, fichier prêt à imprimer', '15 000'],
   ]],
   ['Supports numériques', 'share-2', [
     ['Visuel réseaux sociaux', 'Post ou bannière (Facebook, Insta, TikTok…)', '5 000'],

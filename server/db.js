@@ -105,9 +105,11 @@ export function seed() {
     )
     const rows = [
       ['home', 'Hero', 'hero', "L'essence du raffinement visuel.", "Nous accompagnons les entreprises, marques et particuliers dans la création d'une communication visuelle forte, moderne et impactante.", 1, 0],
-      ['home', 'Services', 'services', 'Tout ce qui est lié au digital', "De l'identité de marque au motion design, nous couvrons l'ensemble de votre communication visuelle.", 1, 1],
-      ['home', 'Portfolios', 'portfolio', 'Notre univers créatif', 'Une sélection de nos réalisations récentes.', 1, 2],
-      ['home', 'Équipe', 'team', "L'équipe Nova", 'Une équipe passionnée qui met sa créativité et son sens du détail au service de votre réussite.', 1, 3],
+      ['home', 'Qui sommes-nous', 'text', 'Une agence créative au service des marques.', "Agence créative basée à Lomé, Nova Graphik conçoit l'identité visuelle des marques ambitieuses : direction artistique, design graphique, motion design, web et production audiovisuelle. Une équipe pluridisciplinaire, une exigence partagée — accompagner les marques à se démarquer dans l'univers digital.", 1, 1],
+      ['home', 'Services', 'services', 'Tout ce qui est lié au digital', "De l'identité de marque au motion design, nous couvrons l'ensemble de votre communication visuelle.", 1, 2],
+      ['home', 'Notre vision', 'text', 'Bâtir des identités fortes et durables.', "Devenir une agence de référence en Afrique de l'Ouest, reconnue pour la créativité, l'innovation et la qualité de ses réalisations. De la conception web au design graphique, en passant par l'audiovisuel et l'animation 2D/3D, nous aidons chaque marque à transformer ses idées en projets concrets et performants.", 1, 3],
+      ['home', 'Portfolios', 'portfolio', 'Notre univers créatif', 'Une sélection de nos réalisations récentes.', 1, 4],
+      ['home', 'Équipe', 'team', "L'équipe Nova", 'Une équipe pluridisciplinaire qui met sa créativité et son sens du détail au service de votre réussite.', 1, 5],
     ]
     for (const r of rows) ins.run(...r)
     console.log('[seed] sections de la page d’accueil initialisées')
@@ -124,7 +126,7 @@ export function seed() {
       social_instagram: '#',
       social_facebook: '#',
       social_youtube: '#',
-      social_tiktok: '',
+      social_tiktok: '#',
     }
     for (const [k, v] of Object.entries(defaults)) ins.run(k, v)
     console.log('[seed] réglages initialisés')
@@ -135,9 +137,11 @@ export function seed() {
       'INSERT INTO team_members (name, role, bio, slug, parent_id, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
     const team = [
-      ['AMEGNAGLO K.S', 'Graphiste Designer', "Graphiste passionné avec une solide expertise dans la conception visuelle, j'apporte des solutions créatives et stratégiques aux projets de mes clients.", null, 0],
-      ['TAMEGNON K.K', 'Monteur vidéo · YouTube', 'Monteur vidéo et créateur de contenus courts pour les réseaux et YouTube.', null, 1],
-      ['GEORGE', 'Web designer', 'Web designer chez Nova, je conçois des interfaces élégantes et performantes.', null, 2],
+      ['AMEGNAGLO K.S', 'Graphiste Designer de NOVA', "Direction artistique et identité visuelle. Logos, chartes graphiques et supports imprimés — Samuel met son œil et sa rigueur au service d'identités fortes, cohérentes et mémorables.", null, 0],
+      ['TAMEGNON K.K', 'Monteur vidéo · short YouTube de NOVA', "Monteur vidéo et créateur de contenu. Spécialisé dans les formats courts, les capsules YouTube et les motion teasers pour les marques qui veulent capter l'attention en moins de 30 secondes.", null, 1],
+      ['GEORGE', 'Web designer de NOVA', 'Web designer chez Nova. Conçoit des interfaces élégantes, performantes et orientées conversion — sites vitrine, e-commerce et plateformes sur mesure.', null, 2],
+      ['BANAWOYE Eliezer', 'Réalisateur · Cadreur · Monteur', "Réalisateur et chef opérateur. Cadreur, monteur et éclaireur — Eliezer signe la captation et la post-production des reportages, films corporate et clips musicaux de l'agence. Formation Bac+2 FLLA.", null, 3],
+      ['FIA Yaovi Daniel', 'Responsable marketing & community manager', "Responsable marketing et community manager chez Nova. Gestionnaire des ressources humaines de formation, photographe et vidéaste, Daniel orchestre la stratégie de présence digitale et l'image de marque de l'agence. Aussi mannequin et musicien à ses heures.", null, 4],
     ]
     for (const [name, role, bio, parent, pos] of team) {
       ins.run(name, role, bio, uniqueSlug('team_members', slugify(name)), parent, pos, 1)
@@ -147,18 +151,24 @@ export function seed() {
 
   if (db.prepare('SELECT COUNT(*) AS c FROM portfolio_items').get().c === 0) {
     const ins = db.prepare(
-      'INSERT INTO portfolio_items (title, slug, category, description, position, visible) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO portfolio_items (title, slug, category, description, cover_image, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
     const items = [
-      ['Charte Visiosphere', 'Logo', 'Identité visuelle complète pour Visiosphere.'],
-      ['Affiche événement', 'Flyers', 'Affiche publicitaire pour un événement.'],
-      ['Teaser produit', 'Motion design', 'Animation teaser de lancement produit.'],
-      ['Packaging 3D', '3D', 'Visualisation 3D de packaging.'],
-      ['Illustration 2D', '2D', 'Illustration vectorielle 2D.'],
-      ['Shooting corporate', 'Photographie', 'Séance photo corporate.'],
+      ['Logo ANIEL', 'Logo', "Identité visuelle pour Aniel — signe net, posture haut de gamme.", '/uploads/wp-logo-aniel.png'],
+      ['Identité Nova', 'Logo', "Identité visuelle de l'agence Nova Graphik.", '/uploads/wp-nova-identity.jpg'],
+      ['Carte de visite premium', 'Supports imprimés', 'Conception et impression d’une carte de visite 300g finition laminée.', '/uploads/wp-carte-pro.jpg'],
+      ['Flyer rentrée', 'Flyers', 'Affiche promotionnelle de campagne rentrée.', '/uploads/wp-flyer-rentree.jpg'],
+      ['Flyer août', 'Flyers', 'Affiche événementielle été.', '/uploads/wp-flyer-aout.png'],
+      ['Concept flyer carré', 'Flyers', 'Concept de flyer carré, mise en page éditoriale.', '/uploads/wp-flyer-mockup.jpg'],
+      ['Packaging produit', '3D', 'Mise en scène produit — textile / packaging.', '/uploads/wp-packaging-casquette.jpg'],
+      ['Direction artistique pâtisserie', 'Photographie', "Direction artistique et shooting produit pour la pâtisserie.", '/uploads/wp-cake.jpg'],
+      ['Shooting matériel', 'Photographie', 'Reportage photo matériel et mise en scène.', '/uploads/wp-shooting-gear.jpg'],
+      ['Visuel Samoussa', '2D', 'Visuel promotionnel street-food.', '/uploads/wp-samoussa.jpg'],
+      ['Habillage Dream', 'Motion design', "Cover éditoriale et habillage motion.", '/uploads/wp-dream-cover.jpg'],
+      ['Maquette web pro', 'UX/UI Web', "Direction artistique d'une maquette de site web.", '/uploads/wp-web-mockup.jpg'],
     ]
-    items.forEach(([title, category, description], i) => {
-      ins.run(title, uniqueSlug('portfolio_items', slugify(title)), category, description, i, 1)
+    items.forEach(([title, category, description, cover], i) => {
+      ins.run(title, uniqueSlug('portfolio_items', slugify(title)), category, description, cover, i, 1)
     })
     console.log('[seed] portfolio initialisé')
   }
