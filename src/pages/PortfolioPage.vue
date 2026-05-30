@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useViewport } from '@/composables/useViewport'
 import { usePortfolio } from '@/composables/usePortfolio'
 import NContainer from '@/components/base/NContainer.vue'
@@ -13,9 +13,24 @@ import CtaBand from '@/components/sections/CtaBand.vue'
 
 const { isMobile } = useViewport()
 const { items, categories, load } = usePortfolio()
+const route = useRoute()
+const router = useRouter()
 onMounted(load)
 
-const cat = ref('Tout')
+// `cat` is kept in sync with the ?cat=… URL query so deep links from the
+// home teaser ("Voir plusieurs réalisations") preselect the right filter.
+function readCatFromUrl(): string {
+  const q = route.query.cat
+  return typeof q === 'string' && q ? q : 'Tout'
+}
+const cat = ref(readCatFromUrl())
+watch(() => route.query.cat, () => { cat.value = readCatFromUrl() })
+
+function setCat(c: string) {
+  cat.value = c
+  router.replace({ query: { ...route.query, cat: c === 'Tout' ? undefined : c } })
+}
+
 const cats = computed(() => ['Tout', ...categories.value])
 const filtered = computed(() => (cat.value === 'Tout' ? items.value : items.value.filter((i) => i.category === cat.value)))
 </script>
@@ -35,7 +50,7 @@ const filtered = computed(() => (cat.value === 'Tout' ? items.value : items.valu
             :key="c"
             :active="cat === c && c !== 'Tout'"
             :accent="cat === c && c === 'Tout'"
-            @click="cat = c"
+            @click="setCat(c)"
           >{{ c }}</NPill>
         </div>
 

@@ -158,19 +158,29 @@ export function seed() {
     const ins = db.prepare(
       'INSERT INTO portfolio_items (title, slug, category, description, cover_image, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
+    // Samuel's portfolio (re-scraped from novagraphik.fr/portfolios/): 4 types.
     const items = [
-      ['Logo ANIEL', 'Logo', "Identité visuelle pour Aniel — signe net, posture haut de gamme.", '/uploads/wp-logo-aniel.png'],
-      ['Identité Nova', 'Logo', "Identité visuelle de l'agence Nova Graphik.", '/uploads/wp-nova-identity.jpg'],
-      ['Carte de visite premium', 'Supports imprimés', 'Conception et impression d’une carte de visite 300g finition laminée.', '/uploads/wp-carte-pro.jpg'],
-      ['Flyer rentrée', 'Flyers', 'Affiche promotionnelle de campagne rentrée.', '/uploads/wp-flyer-rentree.jpg'],
-      ['Flyer août', 'Flyers', 'Affiche événementielle été.', '/uploads/wp-flyer-aout.png'],
-      ['Concept flyer carré', 'Flyers', 'Concept de flyer carré, mise en page éditoriale.', '/uploads/wp-flyer-mockup.jpg'],
-      ['Packaging produit', '3D', 'Mise en scène produit — textile / packaging.', '/uploads/wp-packaging-casquette.jpg'],
-      ['Direction artistique pâtisserie', 'Photographie', "Direction artistique et shooting produit pour la pâtisserie.", '/uploads/wp-cake.jpg'],
-      ['Shooting matériel', 'Photographie', 'Reportage photo matériel et mise en scène.', '/uploads/wp-shooting-gear.jpg'],
-      ['Visuel Samoussa', '2D', 'Visuel promotionnel street-food.', '/uploads/wp-samoussa.jpg'],
+      // LOGO
+      ['Logo ARIDAS', 'Logo', "Identité visuelle ARIDAS — typographie et signe distinctif.", '/uploads/samuel-logo-aridas.jpg'],
+      ['Identité MAK', 'Logo', "Identité de marque MAK — posture premium.", '/uploads/samuel-logo-mak.jpg'],
+      ['Habillage T-shirt', 'Logo', "Application du logo sur textile (mockup t-shirt plié).", '/uploads/samuel-logo-tshirt.jpg'],
+      ['Carte logo CART2', 'Logo', "Carte de visite avec logo intégré, finition pro.", '/uploads/samuel-logo-cart2.jpg'],
+      ['Étiquette etik', 'Logo', "Étiquette produit — design de marque.", '/uploads/samuel-logo-etik.jpg'],
+      ['Logo iPhone mockup', 'Logo', "Présentation du logo sur écran mobile.", '/uploads/samuel-logo-iphone.jpg'],
+      // FLYERS
+      ['Flyer COOKIES', 'Flyers', "Communication visuelle pour produit pâtissier — cookies.", '/uploads/samuel-flyer-cookies.jpg'],
+      ['Flyer CAKE', 'Flyers', "Direction artistique pour atelier de pâtisserie.", '/uploads/samuel-flyer-cake.jpg'],
+      ['Flyer CAFÉ', 'Flyers', "Visuel promotionnel — gamme café.", '/uploads/samuel-flyer-cafe.jpg'],
+      ['Flyer cafétéria', 'Flyers', "Affiche commerciale — cafétéria.", '/uploads/samuel-flyer-caff.jpg'],
+      ['Affiche JOUR 1', 'Flyers', "Affiche événementielle grand format.", '/uploads/samuel-flyer-jour1.jpg'],
+      // MOTION
       ['Habillage Dream', 'Motion design', "Cover éditoriale et habillage motion.", '/uploads/wp-dream-cover.jpg'],
-      ['Maquette web pro', 'UX/UI Web', "Direction artistique d'une maquette de site web.", '/uploads/wp-web-mockup.jpg'],
+      // SHOOTING
+      ['Shooting éditorial 1', 'Shooting', "Direction artistique et prise de vue éditoriale.", '/uploads/samuel-shooting-1.jpg'],
+      ['Shooting éditorial 2', 'Shooting', "Série mode — séance studio.", '/uploads/samuel-shooting-2.jpg'],
+      ['Shooting éditorial 3', 'Shooting', "Capture de produit en lumière naturelle.", '/uploads/samuel-shooting-3.jpg'],
+      ['Shooting éditorial 4', 'Shooting', "Mise en scène pour campagne marque.", '/uploads/samuel-shooting-4.jpg'],
+      ['Lash campaign', 'Shooting', "Campagne beauté — direction artistique complète.", '/uploads/samuel-shooting-lash.jpg'],
     ]
     items.forEach(([title, category, description, cover], i) => {
       ins.run(title, uniqueSlug('portfolio_items', slugify(title)), category, description, cover, i, 1)

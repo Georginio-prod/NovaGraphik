@@ -42,3 +42,4 @@ server/*.sqlite-*
 # Uploaded media (created at runtime — only the seed reference images are kept)
 server/uploads/*
 !server/uploads/wp-*
+!server/uploads/samuel-*

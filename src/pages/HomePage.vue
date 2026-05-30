@@ -9,10 +9,12 @@ import NSectionHeader from '@/components/base/NSectionHeader.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import ServiceCard from '@/components/sections/ServiceCard.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
+import { RouterLink } from 'vue-router'
 import CmsContentSection from '@/components/sections/CmsContentSection.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
 import TeamOrgChart from '@/components/sections/TeamOrgChart.vue'
 import { useTeam } from '@/composables/useTeam'
+import { usePortfolio } from '@/composables/usePortfolio'
 
 const { isMobile, isTablet } = useViewport()
 
@@ -34,9 +36,25 @@ const servicesCols = computed(() =>
 const site = useSiteContent('home')
 const { customSections } = site
 const { members: teamMembers, load: loadTeam } = useTeam()
+const { items: portfolioItems, load: loadPortfolio } = usePortfolio()
 onMounted(() => {
   site.load()
   loadTeam()
+  loadPortfolio()
+})
+
+// Distinct categories with the first item's cover as the category card image —
+// these become the home portfolio teaser cards.
+const categoryCovers = computed(() => {
+  const seen = new Set<string>()
+  const out: { category: string; cover: string }[] = []
+  for (const it of portfolioItems.value) {
+    if (it.category && !seen.has(it.category)) {
+      seen.add(it.category)
+      out.push({ category: it.category, cover: it.cover_image || '' })
+    }
+  }
+  return out
 })
 
 // The "Qui sommes-nous" section is rendered right after the Hero, in a fixed
@@ -125,21 +143,30 @@ const heroParts = computed(() => {
           <NSectionHeader eyebrow="Portfolios" :title="site.title('Portfolios', PORTFOLIO_TITLE_DEFAULT)" />
           <NButton v-if="!isMobile" variant="ghost" icon="arrow-right" to="/portfolios">Voir tout</NButton>
         </div>
-        <div
-          class="grid gap-[18px]"
-          :class="
-            isMobile
-              ? 'grid-cols-1'
-              : 'grid-cols-[1.5fr_1fr_1fr] grid-rows-[200px_200px]'
-          "
-        >
-          <div :class="!isMobile && 'row-span-2'">
-            <NPlaceholder label="Branding — Visiosphere" :idx="0" :height="isMobile ? 200 : '100%'" />
-          </div>
-          <NPlaceholder label="Logo" :idx="2" :height="isMobile ? 160 : '100%'" />
-          <NPlaceholder label="Motion design" :idx="3" :height="isMobile ? 160 : '100%'" />
-          <NPlaceholder label="Photographie" :idx="4" :height="isMobile ? 160 : '100%'" />
-          <NPlaceholder label="3D" :idx="1" :height="isMobile ? 160 : '100%'" />
+        <!-- Category covers (one card per Samuel portfolio category) -->
+        <div class="grid gap-[18px] grid-cols-1 tab:grid-cols-2">
+          <RouterLink
+            v-for="(cc, i) in categoryCovers"
+            :key="cc.category"
+            :to="`/portfolios?cat=${encodeURIComponent(cc.category)}`"
+            v-reveal="(i % 2) * 80"
+            class="relative block aspect-[16/10] rounded-lg overflow-hidden no-underline group"
+          >
+            <img
+              v-if="cc.cover"
+              :src="cc.cover"
+              :alt="cc.category"
+              class="absolute inset-0 w-full h-full object-cover transition-transform duration-nova-slow ease-nova group-hover:scale-105"
+            />
+            <NPlaceholder v-else :idx="i" :height="'100%'" radius="rounded-none" />
+            <div class="absolute inset-0 bg-gradient-to-t from-nova-navy-900/85 via-nova-navy-900/30 to-transparent" />
+            <div class="absolute inset-x-0 bottom-0 p-5 tab:p-6 z-10">
+              <div class="font-display text-white text-[clamp(22px,2.2vw,30px)] font-semibold leading-tight">{{ cc.category }}</div>
+              <div class="flex items-center gap-2 text-nova-lime text-[10.5px] font-glyphic tracking-[0.18em] uppercase mt-2 opacity-90">
+                Voir plusieurs réalisations →
+              </div>
+            </div>
+          </RouterLink>
         </div>
         <NButton
           v-if="isMobile"
