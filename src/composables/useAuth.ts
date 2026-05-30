@@ -1,46 +1,62 @@
 import { ref, computed } from 'vue'
-import { api, getToken, setToken, clearToken, type User } from '@/lib/api'
+import type { Session, User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
-// Module-level singleton state shared across the app.
-const token = ref<string | null>(getToken())
+// Module-level singleton state, kept in sync with the Supabase session.
+const session = ref<Session | null>(null)
 const user = ref<User | null>(null)
 const ready = ref(false)
 
+let initPromise: Promise<void> | null = null
+
+async function init() {
+  const { data } = await supabase.auth.getSession()
+  session.value = data.session
+  user.value = data.session?.user ?? null
+  ready.value = true
+}
+
+function startInit() {
+  if (initPromise) return initPromise
+  initPromise = init().catch(() => {
+    ready.value = true
+  })
+  // React to subsequent auth changes (login, logout, token refresh)
+  supabase.auth.onAuthStateChange((_event, s) => {
+    session.value = s
+    user.value = s?.user ?? null
+    ready.value = true
+  })
+  return initPromise
+}
+
+// Kick off initialisation immediately on module load.
+startInit()
+
 export function useAuth() {
-  const isAdmin = computed(() => user.value?.role === 'admin')
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
+  // With a single shared credential, any authenticated user is an admin.
+  const isAuthenticated = computed(() => !!session.value)
+  const isAdmin = computed(() => !!user.value)
 
   async function login(email: string, password: string): Promise<User> {
-    const data = await api.post<{ token: string; user: User }>('/auth/login', { email, password })
-    setToken(data.token)
-    token.value = data.token
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
+    session.value = data.session
     user.value = data.user
     return data.user
   }
 
-  function logout(): void {
-    clearToken()
-    token.value = null
+  async function logout(): Promise<void> {
+    await supabase.auth.signOut()
+    session.value = null
     user.value = null
   }
 
-  // Resolves the current session from a stored token (called by the router guard).
+  // Awaitable across navigation guards — resolves once Supabase has loaded the session.
   async function ensureSession(): Promise<User | null> {
-    if (user.value) return user.value
-    if (!token.value) {
-      ready.value = true
-      return null
-    }
-    try {
-      const data = await api.get<{ user: User }>('/auth/me')
-      user.value = data.user
-    } catch {
-      logout()
-    } finally {
-      ready.value = true
-    }
+    if (!ready.value) await startInit()
     return user.value
   }
 
-  return { token, user, ready, isAdmin, isAuthenticated, login, logout, ensureSession }
+  return { session, user, ready, isAdmin, isAuthenticated, login, logout, ensureSession }
 }

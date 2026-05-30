@@ -1,14 +1,12 @@
-// Tiny typed fetch wrapper around the Nova Graphik API.
-const TOKEN_KEY = 'nova_token'
+import { supabase } from '@/lib/supabase'
 
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
-}
-export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token)
-}
-export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY)
+// Tiny typed fetch wrapper around the Nova Graphik API.
+// Auth is delegated to Supabase: every request reads the current access token
+// from the active session and forwards it as Authorization: Bearer <token>.
+
+export async function getAccessToken(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? null
 }
 
 export class ApiError extends Error {
@@ -22,7 +20,7 @@ export class ApiError extends Error {
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  const token = getToken()
+  const token = await getAccessToken()
   if (token) headers.Authorization = `Bearer ${token}`
 
   const res = await fetch(`/api${path}`, {

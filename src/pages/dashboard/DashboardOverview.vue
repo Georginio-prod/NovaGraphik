@@ -4,10 +4,10 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
 
 const CARDS: [string, string, string, string][] = [
-  ['file-text', 'Pages', 'Sections de la page d’accueil', '/dashboard/pages'],
-  ['image', 'Portfolios', 'Réalisations & catégories', '/dashboard/portfolio'],
-  ['users', 'Équipe', 'Membres & organigramme', '/dashboard/team'],
-  ['settings', 'Réglages', 'Contact & réseaux sociaux', '/dashboard/settings'],
+  ['file-text', 'Pages', 'Sections de la page d’accueil', '/admin/pages'],
+  ['image', 'Portfolios', 'Réalisations & catégories', '/admin/portfolio'],
+  ['users', 'Équipe', 'Membres & organigramme', '/admin/team'],
+  ['settings', 'Réglages', 'Contact & réseaux sociaux', '/admin/settings'],
 ]
 </script>
 

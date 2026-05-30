@@ -1,27 +1,25 @@
 import jwt from 'jsonwebtoken'
 
-const SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me'
-const EXPIRES = '7d'
+// Supabase signs access tokens with the project's JWT secret (HS256).
+// Configure SUPABASE_JWT_SECRET in .env (Supabase Dashboard → Project settings → API → JWT settings).
+const SECRET = process.env.SUPABASE_JWT_SECRET
 
-if (process.env.NODE_ENV === 'production' && SECRET === 'dev-insecure-secret-change-me') {
-  console.warn('[auth] ⚠ JWT_SECRET non défini en production — définissez-le dans .env')
+if (!SECRET) {
+  console.warn(
+    '[auth] ⚠ SUPABASE_JWT_SECRET non défini — toutes les routes /api/admin/* refuseront l’accès.',
+  )
 }
 
-export function signToken(user) {
-  return jwt.sign({ sub: user.id, email: user.email, role: user.role }, SECRET, { expiresIn: EXPIRES })
-}
-
-// Rejects anyone who is not an authenticated admin.
+// Any authenticated Supabase user is treated as admin
+// (the brief: shared password used by every administrator).
 export function requireAdmin(req, res, next) {
+  if (!SECRET) return res.status(503).json({ error: 'Authentification non configurée' })
   const header = req.headers.authorization
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Non authentifié' })
   }
   try {
     const payload = jwt.verify(header.slice(7), SECRET)
-    if (payload.role !== 'admin') {
-      return res.status(403).json({ error: 'Accès réservé aux administrateurs' })
-    }
     req.user = payload
     next()
   } catch {
