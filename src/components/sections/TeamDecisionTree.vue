@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import NIcon from '@/components/base/NIcon.vue'
 
 defineOptions({ name: 'TeamDecisionTree' })
@@ -7,7 +8,12 @@ type Result = { type: 'result'; label: string; members: string[]; hint?: string;
 type Question = { type: 'question'; n: number; text: string; yes: Node; no: Node }
 type Node = Question | Result
 
-defineProps<{ node: Node; branch?: 'yes' | 'no' | null }>()
+defineProps<{
+  node: Node
+  branch?: 'yes' | 'no' | null
+  /** name → slug lookup so result names can link to /equipe/:slug */
+  slugMap?: Record<string, string>
+}>()
 </script>
 
 <template>
@@ -50,9 +56,21 @@ defineProps<{ node: Node; branch?: 'yes' | 'no' | null }>()
     >
       <NIcon :name="node.members.length > 1 ? 'users' : 'user'" :size="26" />
       <div class="font-semibold text-[11.5px] tracking-wider uppercase mt-1">{{ node.label }}</div>
-      <div v-for="m in node.members" :key="m" class="font-glyphic text-[9.5px] tracking-[0.14em] uppercase" :class="node.muted ? 'text-fg-3' : 'text-white/85'">
-        {{ m }}
-      </div>
+
+      <!-- Member names: clickable when the slug exists -->
+      <template v-for="m in node.members" :key="m">
+        <RouterLink
+          v-if="slugMap && slugMap[m]"
+          :to="`/equipe/${slugMap[m]}`"
+          class="font-glyphic text-[9.5px] tracking-[0.14em] uppercase no-underline transition-colors duration-nova text-white/85 hover:text-nova-lime"
+        >{{ m }}</RouterLink>
+        <span
+          v-else
+          class="font-glyphic text-[9.5px] tracking-[0.14em] uppercase"
+          :class="node.muted ? 'text-fg-3' : 'text-white/85'"
+        >{{ m }}</span>
+      </template>
+
       <div v-if="node.hint" class="text-[9.5px] tracking-wider uppercase mt-1" :class="node.muted ? 'text-fg-3' : 'text-white/70'">
         {{ node.hint }}
       </div>
@@ -60,8 +78,8 @@ defineProps<{ node: Node; branch?: 'yes' | 'no' | null }>()
 
     <!-- Children -->
     <ul v-if="node.type === 'question'" class="flex justify-center relative mt-4">
-      <TeamDecisionTree :node="node.yes" branch="yes" />
-      <TeamDecisionTree :node="node.no" branch="no" />
+      <TeamDecisionTree :node="node.yes" branch="yes" :slug-map="slugMap" />
+      <TeamDecisionTree :node="node.no" branch="no" :slug-map="slugMap" />
     </ul>
   </li>
 </template>
