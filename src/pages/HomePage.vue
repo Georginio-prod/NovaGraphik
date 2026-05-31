@@ -15,19 +15,26 @@ import AboutSection from '@/components/sections/AboutSection.vue'
 import TeamOrgChart from '@/components/sections/TeamOrgChart.vue'
 import { useTeam } from '@/composables/useTeam'
 import { usePortfolio } from '@/composables/usePortfolio'
+import { useServices } from '@/composables/useEditable'
 
 const { isMobile, isTablet } = useViewport()
 
-const SERVICES: [string, string, string][] = [
-  ['palette', 'Identité visuelle', 'Logos, charte graphique & rebranding sur mesure.'],
-  ['printer', 'Supports imprimés', 'Cartes, flyers, brochures, bannières & roll-ups.'],
-  ['share-2', 'Réseaux sociaux', 'Visuels & packs cohérents pour vos campagnes.'],
-  ['clapperboard', 'Motion design', 'Animations, teasers & montage vidéo.'],
-  ['box', '3D / 2D', 'Modélisation et création 3D & 2D.'],
-  ['camera', 'Photo & reportage', 'Photographie pro & reportage audiovisuel.'],
-  ['monitor', 'Web & UX/UI', 'Maquettes de sites vitrine & e-commerce.'],
-  ['mail', 'Email marketing', 'Design de campagnes & signatures mail.'],
+// Services are editable from /admin/services and loaded from the API.
+// The static fallback keeps the home rendering correctly while the API loads.
+const SERVICES_FALLBACK: { icon: string; title: string; description: string }[] = [
+  { icon: 'palette', title: 'Identité visuelle', description: 'Logos, charte graphique & rebranding sur mesure.' },
+  { icon: 'printer', title: 'Supports imprimés', description: 'Cartes, flyers, brochures, bannières & roll-ups.' },
+  { icon: 'share-2', title: 'Réseaux sociaux', description: 'Visuels & packs cohérents pour vos campagnes.' },
+  { icon: 'clapperboard', title: 'Motion design', description: 'Animations, teasers & montage vidéo.' },
+  { icon: 'box', title: '3D / 2D', description: 'Modélisation et création 3D & 2D.' },
+  { icon: 'camera', title: 'Photo & reportage', description: 'Photographie pro & reportage audiovisuel.' },
+  { icon: 'monitor', title: 'Web & UX/UI', description: 'Maquettes de sites vitrine & e-commerce.' },
+  { icon: 'mail', title: 'Email marketing', description: 'Design de campagnes & signatures mail.' },
 ]
+const { items: liveServices, loaded: servicesLoaded, load: loadServices } = useServices()
+const SERVICES = computed(() =>
+  servicesLoaded.value && liveServices.value.length ? liveServices.value : SERVICES_FALLBACK,
+)
 
 const servicesCols = computed(() =>
   isMobile.value || isTablet.value ? 'repeat(2,1fr)' : 'repeat(4,1fr)',
@@ -41,6 +48,7 @@ onMounted(() => {
   site.load()
   loadTeam()
   loadPortfolio()
+  loadServices()
 })
 
 // Distinct categories with the first item's cover as the category card image —
@@ -127,11 +135,11 @@ const heroParts = computed(() => {
         <div class="grid gap-[18px] mt-8 tab:mt-12" :style="{ gridTemplateColumns: servicesCols }">
           <ServiceCard
             v-for="(s, i) in SERVICES"
-            :key="s[1]"
+            :key="(s as any).id ?? (s as any).title"
             v-reveal="i * 60"
-            :icon="s[0]"
-            :title="s[1]"
-            :desc="s[2]"
+            :icon="(s as any).icon"
+            :title="(s as any).title"
+            :desc="(s as any).description"
           />
         </div>
       </NContainer>

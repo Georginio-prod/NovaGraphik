@@ -57,6 +57,68 @@ db.exec(`
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL DEFAULT ''
   );
+  CREATE TABLE IF NOT EXISTS nav_items (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    label    TEXT NOT NULL,
+    path     TEXT NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    visible  INTEGER NOT NULL DEFAULT 1
+  );
+  CREATE TABLE IF NOT EXISTS services (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    icon        TEXT NOT NULL DEFAULT 'sparkles',
+    title       TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    position    INTEGER NOT NULL DEFAULT 0,
+    visible     INTEGER NOT NULL DEFAULT 1
+  );
+  CREATE TABLE IF NOT EXISTS articles (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    title       TEXT NOT NULL,
+    slug        TEXT NOT NULL DEFAULT '',
+    category    TEXT NOT NULL DEFAULT '',
+    excerpt     TEXT NOT NULL DEFAULT '',
+    body        TEXT NOT NULL DEFAULT '',
+    cover_image TEXT NOT NULL DEFAULT '',
+    date        TEXT NOT NULL DEFAULT '',
+    position    INTEGER NOT NULL DEFAULT 0,
+    visible     INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS partners (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    name     TEXT NOT NULL,
+    logo_url TEXT NOT NULL DEFAULT '',
+    position INTEGER NOT NULL DEFAULT 0,
+    visible  INTEGER NOT NULL DEFAULT 1
+  );
+  CREATE TABLE IF NOT EXISTS testimonials (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    quote       TEXT NOT NULL,
+    author_name TEXT NOT NULL DEFAULT '',
+    author_role TEXT NOT NULL DEFAULT '',
+    position    INTEGER NOT NULL DEFAULT 0,
+    visible     INTEGER NOT NULL DEFAULT 1
+  );
+  CREATE TABLE IF NOT EXISTS pricing_items (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_title TEXT NOT NULL DEFAULT '',
+    group_icon  TEXT NOT NULL DEFAULT '',
+    name        TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    price       TEXT NOT NULL DEFAULT '',
+    position    INTEGER NOT NULL DEFAULT 0,
+    visible     INTEGER NOT NULL DEFAULT 1
+  );
+  CREATE TABLE IF NOT EXISTS pricing_formulas (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    name     TEXT NOT NULL,
+    price    TEXT NOT NULL DEFAULT '',
+    features TEXT NOT NULL DEFAULT '[]',
+    is_hot   INTEGER NOT NULL DEFAULT 0,
+    position INTEGER NOT NULL DEFAULT 0,
+    visible  INTEGER NOT NULL DEFAULT 1
+  );
 `)
 
 // --- lightweight migration: add columns to pre-existing `sections` tables ---
@@ -272,5 +334,130 @@ export function seed() {
       )
     })
     console.log('[seed] portfolio initialisé')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM nav_items').get().c === 0) {
+    const ins = db.prepare('INSERT INTO nav_items (label, path, position, visible) VALUES (?, ?, ?, 1)')
+    const nav = [
+      ['Accueil', '/'],
+      ['Portfolios', '/portfolios'],
+      ['Blogs', '/blogs'],
+      ['Contact', '/contact'],
+      ['Partenaires', '/partenaires'],
+      ['Grille tarifaire', '/grille-tarifaire'],
+    ]
+    nav.forEach(([l, p], i) => ins.run(l, p, i))
+    console.log('[seed] navigation initialisée')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM services').get().c === 0) {
+    const ins = db.prepare('INSERT INTO services (icon, title, description, position, visible) VALUES (?, ?, ?, ?, 1)')
+    const svc = [
+      ['palette', 'Identité visuelle', 'Logos, charte graphique & rebranding sur mesure.'],
+      ['printer', 'Supports imprimés', 'Cartes, flyers, brochures, bannières & roll-ups.'],
+      ['share-2', 'Réseaux sociaux', 'Visuels & packs cohérents pour vos campagnes.'],
+      ['clapperboard', 'Motion design', 'Animations, teasers & montage vidéo.'],
+      ['box', '3D / 2D', 'Modélisation et création 3D & 2D.'],
+      ['camera', 'Photo & reportage', 'Photographie pro & reportage audiovisuel.'],
+      ['monitor', 'Web & UX/UI', 'Maquettes de sites vitrine & e-commerce.'],
+      ['mail', 'Email marketing', 'Design de campagnes & signatures mail.'],
+    ]
+    svc.forEach(([ic, t, d], i) => ins.run(ic, t, d, i))
+    console.log('[seed] services initialisés')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM articles').get().c === 0) {
+    const ins = db.prepare(
+      'INSERT INTO articles (title, slug, category, excerpt, body, cover_image, date, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)',
+    )
+    const art = [
+      ['Pourquoi un portfolio web est essentiel', 'Web', "Dans le monde numérique d'aujourd'hui, un site portfolio est essentiel pour toute agence de communication…", '12 mai 2026'],
+      ["L'art du motion design court", 'Motion', "Comment capter l'attention en moins de 30 secondes sur les réseaux sociaux.", '04 mai 2026'],
+      ['Construire une identité de marque forte', 'Branding', "Couleurs, typographies, déclinaisons : les fondations d'une charte graphique réussie.", '28 avr. 2026'],
+      ['5 tendances design 2026', 'Tendances', 'Les courants visuels à suivre cette année.', '20 avr. 2026'],
+      ['Réussir son shooting produit', 'Photo', 'Tout pour transformer un shooting en campagne efficace.', '11 avr. 2026'],
+      ['La 3D au service du packaging', '3D', 'Quand la modélisation 3D booste vos visuels packaging.', '02 avr. 2026'],
+      ['Email marketing qui convertit', 'Digital', 'Les leviers pour des campagnes mail performantes.', '25 mars 2026'],
+    ]
+    art.forEach(([title, category, excerpt, date], i) => {
+      ins.run(title, uniqueSlug('articles', slugify(title)), category, excerpt, '', '', date, i)
+    })
+    console.log('[seed] articles initialisés')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM partners').get().c === 0) {
+    const ins = db.prepare('INSERT INTO partners (name, logo_url, position, visible) VALUES (?, ?, ?, 1)')
+    const p = ['Visiosphere', 'Atelier Sahel', 'Téranga', 'Sat Media', 'Lomé Co', 'Kara Digital']
+    p.forEach((n, i) => ins.run(n, '', i))
+    console.log('[seed] partenaires initialisés')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM testimonials').get().c === 0) {
+    const ins = db.prepare(
+      'INSERT INTO testimonials (quote, author_name, author_role, position, visible) VALUES (?, ?, ?, ?, 1)',
+    )
+    const t = [
+      ['Grâce à Nova Graphik, notre image de marque a pris vie avec des visuels qui racontent vraiment notre histoire.', 'Studio Visiosphere', 'Direction marketing'],
+      ['Un sens du détail remarquable. Le rebranding a transformé notre perception sur le marché.', 'Atelier Sahel', 'Fondatrice'],
+      ["Réactifs, créatifs et professionnels. Nos campagnes social media n'ont jamais été aussi cohérentes.", 'Maison Téranga', 'Responsable com'],
+    ]
+    t.forEach(([q, n, r], i) => ins.run(q, n, r, i))
+    console.log('[seed] témoignages initialisés')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM pricing_items').get().c === 0) {
+    const ins = db.prepare(
+      'INSERT INTO pricing_items (group_title, group_icon, name, description, price, position, visible) VALUES (?, ?, ?, ?, ?, ?, 1)',
+    )
+    const groups = [
+      ['Identité visuelle', 'palette', [
+        ['Logo professionnel', 'Création sur mesure (2 à 3 propositions, livrables HD + vectoriels)', '25 000'],
+        ['Charte graphique complète', "Couleurs, typographies, déclinaisons du logo, guide d'utilisation", '50 000'],
+        ["Rebranding (refonte d'identité)", 'Modernisation complète de votre image visuelle', '30 000'],
+      ]],
+      ['Supports imprimés', 'printer', [
+        ['Carte de visite', 'Conception graphique seule (livrables HD + vectoriels)', '5 000'],
+        ['Carte de visite + impression', 'Conception + impression 300g finition laminée — 100 exemplaires', '15 000'],
+        ['Flyer A5 (conception + impression)', 'Conception + impression laminé tout fini A5 — 100 FCFA / unité (à partir de 500 ex.)', '50 000 / 500 ex.'],
+        ['Flyer A4 (conception + impression)', 'Conception + impression laminé tout fini A4 — 150 FCFA / unité (à partir de 500 ex.)', '75 000 / 500 ex.'],
+        ['Brochure / Catalogue', 'Mise en page 4 à 12 pages', '25 000'],
+        ['Kakémono / Roll-up', 'Conception + impression tout fini, prêt à exposer', '90 000'],
+        ['Bannière (création seule)', 'Création graphique, fichier prêt à imprimer', '15 000'],
+      ]],
+      ['Supports numériques', 'share-2', [
+        ['Visuel réseaux sociaux', 'Post ou bannière (Facebook, Insta, TikTok…)', '5 000'],
+        ['Pack réseaux sociaux (10 visuels)', 'Visuels cohérents pour une campagne ou un mois', '40 000'],
+        ['Photomontage / Retouche pro', 'Ajustements, détourage, composition créative', '3 000 – 7 000'],
+        ['Mini animation / teaser (motion)', 'Animation 10 à 30 secondes', '30 000'],
+      ]],
+      ['Design web & digital', 'monitor', [
+        ['Maquette de site web (UI/UX)', 'Design complet site vitrine ou e-commerce', '50 000 – 100 000'],
+        ['Bannière web / publicité digitale', 'Pour site ou campagne sponsorisée', '10 000'],
+        ['Email marketing / signature mail', 'Design professionnel et personnalisé', '8 000'],
+      ]],
+      ['Autres prestations', 'sparkles', [
+        ["Carte d'invitation / Menu / Certificat", 'Conception élégante et sur mesure', '8 000'],
+        ['Calendrier / Agenda / Planning', 'Conception personnalisée', '15 000'],
+        ["Affiche d'événement grand format", 'Pour impression ou projection numérique', 'Sur devis'],
+      ]],
+    ]
+    let pos = 0
+    for (const [gt, gi, rows] of groups) {
+      for (const [n, d, p] of rows) ins.run(gt, gi, n, d, p, pos++)
+    }
+    console.log('[seed] grille tarifaire initialisée')
+  }
+
+  if (db.prepare('SELECT COUNT(*) AS c FROM pricing_formulas').get().c === 0) {
+    const ins = db.prepare(
+      'INSERT INTO pricing_formulas (name, price, features, is_hot, position, visible) VALUES (?, ?, ?, ?, ?, 1)',
+    )
+    const f = [
+      ['Basique', '25 000', ['Logo simple', '1 proposition', 'Livrables HD'], 0],
+      ['Standard', '50 000', ['Logo + charte', '2 propositions', 'Fichiers vectoriels', 'Cartes de visite'], 1],
+      ['Premium', '100 000', ['Identité complète', '3 propositions', 'Pack réseaux sociaux', 'Maquette web'], 0],
+    ]
+    f.forEach(([n, p, feats, hot], i) => ins.run(n, p, JSON.stringify(feats), hot, i))
+    console.log('[seed] formules initialisées')
   }
 }

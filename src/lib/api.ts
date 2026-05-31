@@ -85,3 +85,71 @@ export interface PortfolioItem {
   position: number
   visible: number
 }
+
+export interface NavItem {
+  id: number
+  label: string
+  path: string
+  position: number
+  visible: number
+}
+
+export interface Service {
+  id: number
+  icon: string
+  title: string
+  description: string
+  position: number
+  visible: number
+}
+
+export interface Article {
+  id: number
+  title: string
+  slug: string
+  category: string
+  excerpt: string
+  body: string
+  cover_image: string
+  date: string
+  position: number
+  visible: number
+}
+
+export interface Partner {
+  id: number
+  name: string
+  logo_url: string
+  position: number
+  visible: number
+}
+
+export interface Testimonial {
+  id: number
+  quote: string
+  author_name: string
+  author_role: string
+  position: number
+  visible: number
+}
+
+export interface PricingItem {
+  id: number
+  group_title: string
+  group_icon: string
+  name: string
+  description: string
+  price: string
+  position: number
+  visible: number
+}
+
+export interface PricingFormula {
+  id: number
+  name: string
+  price: string
+  features: string[]
+  is_hot: number
+  position: number
+  visible: number
+}

@@ -1,20 +1,28 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useWindowScroll } from '@vueuse/core'
 import { useViewport } from '@/composables/useViewport'
+import { useNav } from '@/composables/useEditable'
 import NIcon from '@/components/base/NIcon.vue'
 import NButton from '@/components/base/NButton.vue'
 import ThemeToggle from '@/components/base/ThemeToggle.vue'
 
-const NAV_ITEMS: [string, string][] = [
-  ['/', 'Accueil'],
-  ['/portfolios', 'Portfolios'],
-  ['/blogs', 'Blogs'],
-  ['/contact', 'Contact'],
-  ['/partenaires', 'Partenaires'],
-  ['/grille-tarifaire', 'Grille tarifaire'],
+// Static fallback used while the live nav loads (and if the API is down).
+const FALLBACK_NAV: { label: string; path: string }[] = [
+  { label: 'Accueil', path: '/' },
+  { label: 'Portfolios', path: '/portfolios' },
+  { label: 'Blogs', path: '/blogs' },
+  { label: 'Contact', path: '/contact' },
+  { label: 'Partenaires', path: '/partenaires' },
+  { label: 'Grille tarifaire', path: '/grille-tarifaire' },
 ]
+
+const { items: navItems, loaded: navLoaded, load: loadNav } = useNav()
+onMounted(loadNav)
+const NAV_ITEMS = computed<{ label: string; path: string }[]>(() =>
+  navLoaded.value && navItems.value.length ? navItems.value : FALLBACK_NAV,
+)
 
 const route = useRoute()
 const router = useRouter()
@@ -58,12 +66,12 @@ function goM(path: string) {
 
       <nav v-if="!isMobile" class="flex gap-[26px]">
         <RouterLink
-          v-for="[path, label] in NAV_ITEMS"
-          :key="path"
-          :to="path"
+          v-for="item in NAV_ITEMS"
+          :key="item.path"
+          :to="item.path"
           class="font-sans text-[11.5px] font-medium tracking-[0.12em] uppercase cursor-pointer text-fg-2 no-underline pb-1 border-b-2 border-transparent transition-[color,border-color] duration-nova hover:text-nova-navy"
-          :class="isActive(path) && '!text-nova-navy !border-nova-lime'"
-        >{{ label }}</RouterLink>
+          :class="isActive(item.path) && '!text-nova-navy !border-nova-lime'"
+        >{{ item.label }}</RouterLink>
       </nav>
 
       <div v-if="!isMobile" class="flex gap-3 items-center">
@@ -83,13 +91,13 @@ function goM(path: string) {
 
     <div v-if="isMobile && open" class="border-t border-line px-5 pt-3 pb-5 flex flex-col gap-0.5">
       <RouterLink
-        v-for="[path, label] in NAV_ITEMS"
-        :key="path"
-        :to="path"
+        v-for="item in NAV_ITEMS"
+        :key="item.path"
+        :to="item.path"
         class="font-sans text-[13px] font-semibold tracking-widest uppercase cursor-pointer py-3 px-1 text-fg-2 no-underline border-b border-line"
-        :class="isActive(path) && '!text-nova-navy'"
-        @click="goM(path)"
-      >{{ label }}</RouterLink>
+        :class="isActive(item.path) && '!text-nova-navy'"
+        @click="goM(item.path)"
+      >{{ item.label }}</RouterLink>
       <div class="flex gap-2.5 mt-3.5 items-center">
         <ThemeToggle class="!w-11 !h-11 shrink-0" />
         <NButton variant="accent" block to="/contact" @click="open = false">Demander un devis</NButton>
