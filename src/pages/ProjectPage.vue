@@ -71,7 +71,17 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
           />
         </div>
 
-        <div class="mt-12">
+        <div class="mt-12 flex flex-wrap gap-3">
+          <a
+            v-if="item.external_url"
+            :href="item.external_url"
+            target="_blank"
+            rel="noopener"
+            class="font-sans font-semibold cursor-pointer border border-transparent rounded-sm inline-flex items-center justify-center gap-2 tracking-wide whitespace-nowrap no-underline transition-all duration-nova ease-nova active:scale-[0.98] text-[15px] px-[30px] py-[15px] bg-nova-navy text-white hover:bg-nova-navy-700"
+          >
+            Voir le projet en ligne
+            <NIcon name="arrow-up-right" :size="18" />
+          </a>
           <NButton variant="accent" icon="arrow-right" to="/contact">Lancer un projet similaire</NButton>
         </div>
       </NContainer>

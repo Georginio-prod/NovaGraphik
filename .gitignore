@@ -43,3 +43,4 @@ server/*.sqlite-*
 server/uploads/*
 !server/uploads/wp-*
 !server/uploads/samuel-*
+!server/uploads/web-*

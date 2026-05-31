@@ -143,30 +143,41 @@ const heroParts = computed(() => {
           <NSectionHeader eyebrow="Portfolios" :title="site.title('Portfolios', PORTFOLIO_TITLE_DEFAULT)" />
           <NButton v-if="!isMobile" variant="ghost" icon="arrow-right" to="/portfolios">Voir tout</NButton>
         </div>
-        <!-- Category covers (one card per Samuel portfolio category) -->
-        <div class="grid gap-[18px] grid-cols-1 tab:grid-cols-2">
-          <RouterLink
-            v-for="(cc, i) in categoryCovers"
-            :key="cc.category"
-            :to="`/portfolios?cat=${encodeURIComponent(cc.category)}`"
-            v-reveal="(i % 2) * 80"
-            class="relative block aspect-[16/10] rounded-lg overflow-hidden no-underline group"
-          >
-            <img
-              v-if="cc.cover"
-              :src="cc.cover"
-              :alt="cc.category"
-              class="absolute inset-0 w-full h-full object-cover transition-transform duration-nova-slow ease-nova group-hover:scale-105"
-            />
-            <NPlaceholder v-else :idx="i" :height="'100%'" radius="rounded-none" />
-            <div class="absolute inset-0 bg-gradient-to-t from-nova-navy-900/85 via-nova-navy-900/30 to-transparent" />
-            <div class="absolute inset-x-0 bottom-0 p-5 tab:p-6 z-10">
-              <div class="font-display text-white text-[clamp(22px,2.2vw,30px)] font-semibold leading-tight">{{ cc.category }}</div>
-              <div class="flex items-center gap-2 text-nova-lime text-[10.5px] font-glyphic tracking-[0.18em] uppercase mt-2 opacity-90">
-                Voir plusieurs réalisations →
+        <!-- Asymmetric mosaic: 1 big + 4 small. 2 cells get a real cover photo,
+             the other 3 stay as branded placeholders until more visuals come. -->
+        <div
+          class="grid gap-[18px]"
+          :class="isMobile ? 'grid-cols-1' : 'grid-cols-[1.5fr_1fr_1fr] grid-rows-[200px_200px]'"
+        >
+          <template v-for="(cell, i) in categoryCovers.slice(0, 5)" :key="cell.category">
+            <RouterLink
+              :to="`/portfolios?cat=${encodeURIComponent(cell.category)}`"
+              v-reveal="(i % 3) * 70"
+              class="relative block rounded-lg overflow-hidden no-underline group"
+              :class="!isMobile && i === 0 && 'row-span-2'"
+              :style="{ height: isMobile ? (i === 0 ? '240px' : '180px') : '100%' }"
+            >
+              <!-- Only the first 2 cells show their actual cover image -->
+              <template v-if="i < 2 && cell.cover">
+                <img
+                  :src="cell.cover"
+                  :alt="cell.category"
+                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-nova-slow ease-nova group-hover:scale-105"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-nova-navy-900/85 via-nova-navy-900/30 to-transparent" />
+              </template>
+              <NPlaceholder v-else :idx="i + 1" :height="'100%'" radius="rounded-none" />
+              <div class="absolute inset-x-0 bottom-0 p-5 z-10">
+                <div
+                  class="font-display text-white font-semibold leading-tight"
+                  :class="!isMobile && i === 0 ? 'text-[clamp(24px,2.5vw,34px)]' : 'text-[clamp(18px,1.8vw,24px)]'"
+                >{{ cell.category }}</div>
+                <div class="flex items-center gap-2 text-nova-lime text-[10px] font-glyphic tracking-[0.18em] uppercase mt-1.5 opacity-90">
+                  Voir plusieurs réalisations →
+                </div>
               </div>
-            </div>
-          </RouterLink>
+            </RouterLink>
+          </template>
         </div>
         <NButton
           v-if="isMobile"

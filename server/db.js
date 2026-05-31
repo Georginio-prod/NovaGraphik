@@ -72,6 +72,7 @@ for (const [col, ddl] of [
 ]) {
   ensureColumn('sections', col, ddl)
 }
+ensureColumn('portfolio_items', 'external_url', "TEXT NOT NULL DEFAULT ''")
 
 export function slugify(str) {
   return String(str)
@@ -156,34 +157,112 @@ export function seed() {
 
   if (db.prepare('SELECT COUNT(*) AS c FROM portfolio_items').get().c === 0) {
     const ins = db.prepare(
-      'INSERT INTO portfolio_items (title, slug, category, description, cover_image, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO portfolio_items (title, slug, category, description, cover_image, images, external_url, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
-    // Samuel's portfolio (re-scraped from novagraphik.fr/portfolios/): 4 types.
+    // Each "showcase" item groups several visuals so the detail page acts like a
+    // mini-gallery — clicking the card reveals plusieurs réalisations.
+    // [title, category, description, cover, images[], external_url]
     const items = [
-      // LOGO
-      ['Logo ARIDAS', 'Logo', "Identité visuelle ARIDAS — typographie et signe distinctif.", '/uploads/samuel-logo-aridas.jpg'],
-      ['Identité MAK', 'Logo', "Identité de marque MAK — posture premium.", '/uploads/samuel-logo-mak.jpg'],
-      ['Habillage T-shirt', 'Logo', "Application du logo sur textile (mockup t-shirt plié).", '/uploads/samuel-logo-tshirt.jpg'],
-      ['Carte logo CART2', 'Logo', "Carte de visite avec logo intégré, finition pro.", '/uploads/samuel-logo-cart2.jpg'],
-      ['Étiquette etik', 'Logo', "Étiquette produit — design de marque.", '/uploads/samuel-logo-etik.jpg'],
-      ['Logo iPhone mockup', 'Logo', "Présentation du logo sur écran mobile.", '/uploads/samuel-logo-iphone.jpg'],
-      // FLYERS
-      ['Flyer COOKIES', 'Flyers', "Communication visuelle pour produit pâtissier — cookies.", '/uploads/samuel-flyer-cookies.jpg'],
-      ['Flyer CAKE', 'Flyers', "Direction artistique pour atelier de pâtisserie.", '/uploads/samuel-flyer-cake.jpg'],
-      ['Flyer CAFÉ', 'Flyers', "Visuel promotionnel — gamme café.", '/uploads/samuel-flyer-cafe.jpg'],
-      ['Flyer cafétéria', 'Flyers', "Affiche commerciale — cafétéria.", '/uploads/samuel-flyer-caff.jpg'],
-      ['Affiche JOUR 1', 'Flyers', "Affiche événementielle grand format.", '/uploads/samuel-flyer-jour1.jpg'],
-      // MOTION
-      ['Habillage Dream', 'Motion design', "Cover éditoriale et habillage motion.", '/uploads/wp-dream-cover.jpg'],
-      // SHOOTING
-      ['Shooting éditorial 1', 'Shooting', "Direction artistique et prise de vue éditoriale.", '/uploads/samuel-shooting-1.jpg'],
-      ['Shooting éditorial 2', 'Shooting', "Série mode — séance studio.", '/uploads/samuel-shooting-2.jpg'],
-      ['Shooting éditorial 3', 'Shooting', "Capture de produit en lumière naturelle.", '/uploads/samuel-shooting-3.jpg'],
-      ['Shooting éditorial 4', 'Shooting', "Mise en scène pour campagne marque.", '/uploads/samuel-shooting-4.jpg'],
-      ['Lash campaign', 'Shooting', "Campagne beauté — direction artistique complète.", '/uploads/samuel-shooting-lash.jpg'],
+      // LOGO showcase
+      [
+        'Logo & identités',
+        'Logo',
+        "Une sélection de logos et déclinaisons d’identité réalisés pour les marques accompagnées par Nova.",
+        '/uploads/samuel-logo-aridas.jpg',
+        [
+          '/uploads/samuel-logo-mak.jpg',
+          '/uploads/samuel-logo-tshirt.jpg',
+          '/uploads/samuel-logo-cart2.jpg',
+          '/uploads/samuel-logo-etik.jpg',
+          '/uploads/samuel-logo-iphone.jpg',
+        ],
+        '',
+      ],
+      // FLYERS showcase
+      [
+        'Flyers & affiches',
+        'Flyers',
+        "Affiches commerciales et flyers évènementiels — restauration, lancements, campagnes saisonnières.",
+        '/uploads/samuel-flyer-cookies.jpg',
+        [
+          '/uploads/samuel-flyer-cake.jpg',
+          '/uploads/samuel-flyer-cafe.jpg',
+          '/uploads/samuel-flyer-caff.jpg',
+          '/uploads/samuel-flyer-jour1.jpg',
+          '/uploads/wp-flyer-rentree.jpg',
+          '/uploads/wp-flyer-aout.png',
+        ],
+        '',
+      ],
+      // MOTION (placeholder — visuals arrive)
+      [
+        'Motion design',
+        'Motion design',
+        "Habillages, teasers et formats courts pour les réseaux. D’autres réalisations arrivent prochainement.",
+        '/uploads/wp-dream-cover.jpg',
+        [],
+        '',
+      ],
+      // SHOOTING showcase
+      [
+        'Shootings & direction artistique',
+        'Shooting',
+        "Direction artistique et prises de vue éditoriales — mode, beauté, campagnes produits.",
+        '/uploads/samuel-shooting-1.jpg',
+        [
+          '/uploads/samuel-shooting-2.jpg',
+          '/uploads/samuel-shooting-3.jpg',
+          '/uploads/samuel-shooting-4.jpg',
+          '/uploads/samuel-shooting-lash.jpg',
+        ],
+        '',
+      ],
+      // WEB PROJET — 4 live deployments scraped via thum.io
+      [
+        'Audiophile e-commerce',
+        'Web Projet',
+        "E-commerce audio premium — fiche produit, panier et tunnel d’achat soignés, interface haut de gamme.",
+        '/uploads/web-audiophile.jpg',
+        [],
+        'https://audiophile-ecommerce-psi-ecru.vercel.app/',
+      ],
+      [
+        'Pomodoro App',
+        'Web Projet',
+        "Application de productivité — minuteur Pomodoro, suivi de cycles de travail et de pauses.",
+        '/uploads/web-pomodoro.jpg',
+        [],
+        'https://promodoro-app-iota.vercel.app/',
+      ],
+      [
+        'CNC Portal',
+        'Web Projet',
+        "Portail métier industriel — gestion d’opérations CNC, tableau de bord et orchestration des flux.",
+        '/uploads/web-cnc.jpg',
+        [],
+        'https://app.cncportal.io/',
+      ],
+      [
+        'Orga Africa',
+        'Web Projet',
+        "Site institutionnel d’Orga Africa — communication corporate et présentation des activités.",
+        '/uploads/web-orga.jpg',
+        [],
+        'https://www.orga-africa.com/',
+      ],
     ]
-    items.forEach(([title, category, description, cover], i) => {
-      ins.run(title, uniqueSlug('portfolio_items', slugify(title)), category, description, cover, i, 1)
+    items.forEach(([title, category, description, cover, images, externalUrl], i) => {
+      ins.run(
+        title,
+        uniqueSlug('portfolio_items', slugify(title)),
+        category,
+        description,
+        cover,
+        JSON.stringify(images || []),
+        externalUrl || '',
+        i,
+        1,
+      )
     })
     console.log('[seed] portfolio initialisé')
   }
