@@ -191,16 +191,23 @@ export function seed() {
           '/uploads/samuel-flyer-jour1.jpg',
           '/uploads/wp-flyer-rentree.jpg',
           '/uploads/wp-flyer-aout.png',
+          '/uploads/wp-flyer-mockup1.jpg',
+          '/uploads/wp-flyer-mockup2.jpg',
         ],
         '',
       ],
-      // MOTION (placeholder — visuals arrive)
+      // MOTION showcase — editorial covers + teasers
       [
         'Motion design',
         'Motion design',
-        "Habillages, teasers et formats courts pour les réseaux. D’autres réalisations arrivent prochainement.",
-        '/uploads/wp-dream-cover.jpg',
-        [],
+        "Habillages, teasers et covers éditoriales — formats courts pour les réseaux et les campagnes de marque.",
+        '/uploads/wp-motion-cover-1.jpg',
+        [
+          '/uploads/wp-dream-cover.jpg',
+          '/uploads/wp-motion-cover-2.jpg',
+          '/uploads/wp-motion-cover-3.jpg',
+          '/uploads/wp-motion-cover-4.jpg',
+        ],
         '',
       ],
       // SHOOTING showcase

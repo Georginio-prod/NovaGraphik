@@ -157,8 +157,8 @@ const heroParts = computed(() => {
               :class="!isMobile && i === 0 && 'row-span-2'"
               :style="{ height: isMobile ? (i === 0 ? '240px' : '180px') : '100%' }"
             >
-              <!-- Only the first 2 cells show their actual cover image -->
-              <template v-if="i < 2 && cell.cover">
+              <!-- Cells with a real cover photo show it; others stay placeholders -->
+              <template v-if="i < 3 && cell.cover">
                 <img
                   :src="cell.cover"
                   :alt="cell.category"
