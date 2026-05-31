@@ -81,6 +81,7 @@ export interface PortfolioItem {
   description: string
   cover_image: string
   images: string[]
+  external_url: string
   position: number
   visible: number
 }

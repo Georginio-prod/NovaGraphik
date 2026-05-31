@@ -51,6 +51,7 @@ async function save() {
       description: it.description,
       cover_image: it.cover_image,
       images: (it.images || []).filter(Boolean),
+      external_url: it.external_url || '',
       visible: it.visible,
     })
     saveState.value = 'saved'
@@ -201,6 +202,9 @@ async function onDrop() {
 
       <label :class="labelClass">Description</label>
       <textarea v-model="cur.description" rows="4" :class="[inputClass, 'text-sm resize-y']" @input="onEdit" />
+
+      <label :class="labelClass">Lien externe (projet en ligne)</label>
+      <input v-model="cur.external_url" :class="inputClass" placeholder="https://… (optionnel)" @input="onEdit" />
 
       <label :class="labelClass">Galerie d'images</label>
       <div class="grid grid-cols-2 tab:grid-cols-3 gap-3 mt-2">

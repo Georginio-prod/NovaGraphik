@@ -20,7 +20,7 @@ app.use(express.json())
 /* ------------------------------- helpers --------------------------------- */
 const SECTION_COLS = 'id, page, type, template, title, body, icon, image, data, visible, position'
 const TEAM_COLS = 'id, name, role, bio, photo, slug, parent_id, position, visible'
-const PF_COLS = 'id, title, slug, category, description, cover_image, images, position, visible'
+const PF_COLS = 'id, title, slug, category, description, cover_image, images, external_url, position, visible'
 
 function parseSection(row) {
   if (!row) return row
@@ -215,9 +215,9 @@ app.post('/api/admin/portfolio', requireAdmin, (req, res) => {
   const { m } = db.prepare('SELECT COALESCE(MAX(position), -1) AS m FROM portfolio_items').get()
   const info = db
     .prepare(
-      'INSERT INTO portfolio_items (title, slug, category, description, cover_image, images, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+      'INSERT INTO portfolio_items (title, slug, category, description, cover_image, images, external_url, position, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)',
     )
-    .run(b.title || '', slug, b.category || '', b.description || '', b.cover_image || '', JSON.stringify(b.images || []), m + 1)
+    .run(b.title || '', slug, b.category || '', b.description || '', b.cover_image || '', JSON.stringify(b.images || []), b.external_url || '', m + 1)
   res.status(201).json({ item: parsePf(db.prepare(`SELECT ${PF_COLS} FROM portfolio_items WHERE id = ?`).get(info.lastInsertRowid)) })
 })
 app.put('/api/admin/portfolio/reorder', requireAdmin, (req, res) => {
@@ -235,7 +235,7 @@ app.put('/api/admin/portfolio/:id', requireAdmin, (req, res) => {
   const title = b.title ?? ex.title
   const slug = title !== ex.title ? uniqueSlug('portfolio_items', slugify(title), id) : ex.slug
   db.prepare(
-    'UPDATE portfolio_items SET title=?, slug=?, category=?, description=?, cover_image=?, images=?, visible=? WHERE id=?',
+    'UPDATE portfolio_items SET title=?, slug=?, category=?, description=?, cover_image=?, images=?, external_url=?, visible=? WHERE id=?',
   ).run(
     title,
     slug,
@@ -243,6 +243,7 @@ app.put('/api/admin/portfolio/:id', requireAdmin, (req, res) => {
     b.description ?? ex.description,
     b.cover_image ?? ex.cover_image,
     b.images !== undefined ? JSON.stringify(b.images) : ex.images,
+    b.external_url ?? ex.external_url,
     b.visible == null ? ex.visible : b.visible ? 1 : 0,
     id,
   )
