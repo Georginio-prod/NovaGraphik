@@ -269,6 +269,126 @@ app.put('/api/admin/settings', requireAdmin, (req, res) => {
   res.json({ settings: Object.fromEntries(rows.map((r) => [r.key, r.value])) })
 })
 
+/* ---------------------- Generic CRUD for simple entities ----------------- */
+function entityCrud({ name, table, cols, parseRow = null, fields }) {
+  const select = (where) => `SELECT ${cols} FROM ${table}${where ? ' WHERE ' + where : ''} ORDER BY position ASC, id ASC`
+  const wrap = (rows) => (parseRow ? rows.map(parseRow) : rows)
+
+  app.get(`/api/${name}`, (_req, res) => res.json({ items: wrap(db.prepare(select('visible = 1')).all()) }))
+  app.get(`/api/admin/${name}`, requireAdmin, (_req, res) => res.json({ items: wrap(db.prepare(select()).all()) }))
+
+  app.put(`/api/admin/${name}/reorder`, requireAdmin, (req, res) => {
+    const { ids } = req.body || {}
+    if (!Array.isArray(ids)) return res.status(400).json({ error: 'Liste d’identifiants requise' })
+    const upd = db.prepare(`UPDATE ${table} SET position = ? WHERE id = ?`)
+    ids.forEach((id, i) => upd.run(i, Number(id)))
+    res.json({ ok: true })
+  })
+
+  app.post(`/api/admin/${name}`, requireAdmin, (req, res) => {
+    const b = req.body || {}
+    const { m } = db.prepare(`SELECT COALESCE(MAX(position), -1) AS m FROM ${table}`).get()
+    const insertCols = ['position', 'visible', ...fields.map((f) => f.col)]
+    const insertVals = [
+      m + 1,
+      1,
+      ...fields.map((f) => {
+        const raw = b[f.col] ?? f.default ?? ''
+        return f.toDb ? f.toDb(raw) : raw
+      }),
+    ]
+    const ph = insertCols.map(() => '?').join(', ')
+    const info = db.prepare(`INSERT INTO ${table} (${insertCols.join(', ')}) VALUES (${ph})`).run(...insertVals)
+    const row = db.prepare(`SELECT ${cols} FROM ${table} WHERE id = ?`).get(info.lastInsertRowid)
+    res.status(201).json({ item: parseRow ? parseRow(row) : row })
+  })
+
+  app.put(`/api/admin/${name}/:id`, requireAdmin, (req, res) => {
+    const id = Number(req.params.id)
+    const ex = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id)
+    if (!ex) return res.status(404).json({ error: 'Introuvable' })
+    const b = req.body || {}
+    const upCols = [...fields.map((f) => f.col), 'visible']
+    const upVals = [
+      ...fields.map((f) => {
+        const v = b[f.col] !== undefined ? b[f.col] : ex[f.col]
+        return f.toDb ? f.toDb(v) : v
+      }),
+      b.visible == null ? ex.visible : b.visible ? 1 : 0,
+    ]
+    const setSql = upCols.map((c) => `${c} = ?`).join(', ')
+    db.prepare(`UPDATE ${table} SET ${setSql} WHERE id = ?`).run(...upVals, id)
+    const row = db.prepare(`SELECT ${cols} FROM ${table} WHERE id = ?`).get(id)
+    res.json({ item: parseRow ? parseRow(row) : row })
+  })
+
+  app.delete(`/api/admin/${name}/:id`, requireAdmin, (req, res) => {
+    db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(Number(req.params.id))
+    res.json({ ok: true })
+  })
+}
+
+entityCrud({ name: 'nav', table: 'nav_items', cols: 'id, label, path, position, visible', fields: [{ col: 'label' }, { col: 'path' }] })
+entityCrud({
+  name: 'services',
+  table: 'services',
+  cols: 'id, icon, title, description, position, visible',
+  fields: [{ col: 'icon', default: 'sparkles' }, { col: 'title' }, { col: 'description' }],
+})
+entityCrud({
+  name: 'articles',
+  table: 'articles',
+  cols: 'id, title, slug, category, excerpt, body, cover_image, date, position, visible',
+  fields: [
+    { col: 'title' },
+    { col: 'slug' },
+    { col: 'category' },
+    { col: 'excerpt' },
+    { col: 'body' },
+    { col: 'cover_image' },
+    { col: 'date' },
+  ],
+})
+entityCrud({
+  name: 'partners',
+  table: 'partners',
+  cols: 'id, name, logo_url, position, visible',
+  fields: [{ col: 'name' }, { col: 'logo_url' }],
+})
+entityCrud({
+  name: 'testimonials',
+  table: 'testimonials',
+  cols: 'id, quote, author_name, author_role, position, visible',
+  fields: [{ col: 'quote' }, { col: 'author_name' }, { col: 'author_role' }],
+})
+entityCrud({
+  name: 'pricing-items',
+  table: 'pricing_items',
+  cols: 'id, group_title, group_icon, name, description, price, position, visible',
+  fields: [
+    { col: 'group_title' },
+    { col: 'group_icon' },
+    { col: 'name' },
+    { col: 'description' },
+    { col: 'price' },
+  ],
+})
+entityCrud({
+  name: 'pricing-formulas',
+  table: 'pricing_formulas',
+  cols: 'id, name, price, features, is_hot, position, visible',
+  parseRow: (r) => {
+    try { r.features = JSON.parse(r.features || '[]') } catch { r.features = [] }
+    return r
+  },
+  fields: [
+    { col: 'name' },
+    { col: 'price' },
+    { col: 'features', default: [], toDb: (v) => JSON.stringify(Array.isArray(v) ? v : []) },
+    { col: 'is_hot', default: 0, toDb: (v) => (v ? 1 : 0) },
+  ],
+})
+
 /* ------------------- Serve the built SPA in production -------------------- */
 const distDir = join(__dirname, '..', 'dist')
 if (existsSync(distDir)) {

@@ -10,11 +10,13 @@ const { logout } = useAuth()
 const NAV: [string, string, string][] = [
   ['layout-dashboard', "Vue d'ensemble", '/admin'],
   ['file-text', 'Pages', '/admin/pages'],
+  ['sparkles', 'Services', '/admin/services'],
   ['image', 'Portfolios', '/admin/portfolio'],
   ['users', 'Équipe', '/admin/team'],
   ['pen-line', 'Blogs', '/admin/blogs'],
   ['award', 'Partenaires', '/admin/partenaires'],
   ['tag', 'Tarifs', '/admin/tarifs'],
+  ['menu', 'Navigation', '/admin/navigation'],
   ['settings', 'Réglages', '/admin/settings'],
 ]
 

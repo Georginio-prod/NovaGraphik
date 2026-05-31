@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { useViewport } from '@/composables/useViewport'
+import { usePartners, useTestimonials } from '@/composables/useEditable'
 import { novaGrad } from '@/lib/gradients'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
@@ -11,12 +13,24 @@ import CtaBand from '@/components/sections/CtaBand.vue'
 
 const { isMobile } = useViewport()
 
-const PARTNERS = ['Visiosphere', 'Atelier Sahel', 'Téranga', 'Sat Media', 'Lomé Co', 'Kara Digital']
-const TESTIMONIALS: [string, string, string][] = [
-  ['Grâce à Nova Graphik, notre image de marque a pris vie avec des visuels qui racontent vraiment notre histoire.', 'Studio Visiosphere', 'Direction marketing'],
-  ['Un sens du détail remarquable. Le rebranding a transformé notre perception sur le marché.', 'Atelier Sahel', 'Fondatrice'],
-  ["Réactifs, créatifs et professionnels. Nos campagnes social media n'ont jamais été aussi cohérentes.", 'Maison Téranga', 'Responsable com'],
+const FALLBACK_PARTNERS = [
+  { id: -1, name: 'Visiosphere', logo_url: '' },
+  { id: -2, name: 'Atelier Sahel', logo_url: '' },
+  { id: -3, name: 'Téranga', logo_url: '' },
+  { id: -4, name: 'Sat Media', logo_url: '' },
+  { id: -5, name: 'Lomé Co', logo_url: '' },
+  { id: -6, name: 'Kara Digital', logo_url: '' },
 ]
+const FALLBACK_TESTIMONIALS = [
+  { id: -1, quote: 'Grâce à Nova Graphik, notre image de marque a pris vie avec des visuels qui racontent vraiment notre histoire.', author_name: 'Studio Visiosphere', author_role: 'Direction marketing' },
+  { id: -2, quote: 'Un sens du détail remarquable. Le rebranding a transformé notre perception sur le marché.', author_name: 'Atelier Sahel', author_role: 'Fondatrice' },
+  { id: -3, quote: "Réactifs, créatifs et professionnels. Nos campagnes social media n'ont jamais été aussi cohérentes.", author_name: 'Maison Téranga', author_role: 'Responsable com' },
+]
+const { items: livePartners, loaded: pLoaded, load: loadPartners } = usePartners()
+const { items: liveTestis, loaded: tLoaded, load: loadTestis } = useTestimonials()
+onMounted(() => { loadPartners(); loadTestis() })
+const PARTNERS = computed<any[]>(() => (pLoaded.value && livePartners.value.length ? livePartners.value : FALLBACK_PARTNERS))
+const TESTIMONIALS = computed<any[]>(() => (tLoaded.value && liveTestis.value.length ? liveTestis.value : FALLBACK_TESTIMONIALS))
 </script>
 
 <template>
@@ -35,9 +49,12 @@ const TESTIMONIALS: [string, string, string][] = [
         >
           <div
             v-for="p in PARTNERS"
-            :key="p"
-            class="h-24 border border-line rounded-md bg-nova-surface grid place-items-center text-fg-3 font-glyphic text-[13px] tracking-widest uppercase text-center px-2"
-          >{{ p }}</div>
+            :key="p.id ?? p.name"
+            class="h-24 border border-line rounded-md bg-nova-surface grid place-items-center text-fg-3 font-glyphic text-[13px] tracking-widest uppercase text-center px-2 overflow-hidden"
+          >
+            <img v-if="p.logo_url" :src="p.logo_url" :alt="p.name" class="max-w-full max-h-full object-contain" />
+            <span v-else>{{ p.name }}</span>
+          </div>
         </div>
       </NContainer>
     </section>
@@ -51,17 +68,17 @@ const TESTIMONIALS: [string, string, string][] = [
         >
           <div
             v-for="(t, i) in TESTIMONIALS"
-            :key="i"
+            :key="t.id ?? i"
             v-reveal="i * 80"
             class="bg-nova-surface border border-line rounded-lg p-8 shadow-nova-sm flex flex-col gap-5"
           >
             <NIcon name="quote" :size="30" color="#0cf25d" />
-            <p class="font-display text-xl leading-snug italic text-fg-1 m-0 flex-1">« {{ t[0] }} »</p>
+            <p class="font-display text-xl leading-snug italic text-fg-1 m-0 flex-1">« {{ t.quote }} »</p>
             <div class="flex items-center gap-3 border-t border-line pt-[18px]">
               <div class="w-[42px] h-[42px] rounded-full shrink-0" :style="{ background: novaGrad(i) }" />
               <div>
-                <div class="font-semibold text-sm text-fg-1">{{ t[1] }}</div>
-                <div class="text-xs text-fg-3">{{ t[2] }}</div>
+                <div class="font-semibold text-sm text-fg-1">{{ t.author_name }}</div>
+                <div class="text-xs text-fg-3">{{ t.author_role }}</div>
               </div>
             </div>
           </div>
