@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DB_PATH = process.env.DB_PATH || join(__dirname, 'data.sqlite')
+// Default: backend/data.sqlite (one level up from src/). Override via DB_PATH
+// in prod (e.g. Railway volume at /data/data.sqlite).
+const DB_PATH = process.env.DB_PATH || join(__dirname, '..', 'data.sqlite')
 
 export const db = new DatabaseSync(DB_PATH)
 

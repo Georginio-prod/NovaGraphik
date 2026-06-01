@@ -1,39 +1,20 @@
 {
-  "name": "mon-site-web",
+  "name": "novagraphik",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "workspaces": [
+    "app",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "server": "node server/index.js",
-    "dev:all": "concurrently -k -n web,api -c green,cyan \"npm run dev\" \"npm run server\"",
-    "build": "vue-tsc -b && vite build",
-    "start": "node server/index.js",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@lucide/vue": "^1.17.0",
-    "@nuxt/ui": "^4.8.1",
-    "@supabase/supabase-js": "^2.106.2",
-    "@unhead/vue": "^3.1.1",
-    "@vueuse/core": "^14.3.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jose": "^6.2.3",
-    "jsonwebtoken": "^9.0.3",
-    "multer": "^2.1.1",
-    "tailwindcss": "^4.3.0",
-    "vue": "^3.5.34",
-    "vue-router": "^5.1.0"
+    "dev": "concurrently -k -n app,api -c green,cyan \"npm -w @novagraphik/app run dev\" \"npm -w @novagraphik/backend run dev\"",
+    "dev:app": "npm -w @novagraphik/app run dev",
+    "dev:api": "npm -w @novagraphik/backend run dev",
+    "build": "npm -w @novagraphik/app run build",
+    "start:app": "npm -w @novagraphik/app run start",
+    "start:api": "npm -w @novagraphik/backend run start"
   },
   "devDependencies": {
-    "@types/node": "^24.12.3",
-    "@vitejs/plugin-vue": "^6.0.6",
-    "@vue/tsconfig": "^0.9.1",
-    "concurrently": "^10.0.0",
-    "typescript": "~6.0.2",
-    "vite": "^8.0.12",
-    "vue-tsc": "^3.2.8"
+    "concurrently": "^10.0.0"
   }
 }

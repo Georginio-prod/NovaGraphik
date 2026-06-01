@@ -7,8 +7,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & builds
 node_modules
+**/node_modules
 dist
+**/dist
 dist-ssr
 *.local
 
@@ -23,24 +26,28 @@ dist-ssr
 *.sln
 *.sw?
 
-# Nuxt UI auto-generated
-auto-imports.d.ts
-components.d.ts
+# Nuxt UI auto-generated (inside app/)
+app/auto-imports.d.ts
+app/components.d.ts
 
 # Design system handoff (reference only, not committed)
 .design-ref
 
-# Local env
+# Local env (root + per-workspace)
 .env
 .env.local
 .env.*.local
+app/.env
+app/.env.local
+backend/.env
+backend/.env.local
 
 # SQLite database (created at runtime)
-server/*.sqlite
-server/*.sqlite-*
+backend/*.sqlite
+backend/*.sqlite-*
 
-# Uploaded media (created at runtime — only the seed reference images are kept)
-server/uploads/*
-!server/uploads/wp-*
-!server/uploads/samuel-*
-!server/uploads/web-*
+# Uploaded media (created at runtime — only seed reference images are kept)
+backend/uploads/*
+!backend/uploads/wp-*
+!backend/uploads/samuel-*
+!backend/uploads/web-*

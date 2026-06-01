@@ -38,8 +38,10 @@ function parsePf(row) {
    the Supabase access token on /api/admin/* via requireAdmin (server/auth.js).
    ------------------------------------------------------------------------ */
 
-/* -------------------------------- Uploads -------------------------------- */
-const uploadsDir = join(__dirname, 'uploads')
+/* -------------------------------- Uploads --------------------------------
+   Lives at backend/uploads/ by default. In prod (Railway), point UPLOADS_DIR
+   at a mounted volume (e.g. /data/uploads) so files survive deploys. */
+const uploadsDir = process.env.UPLOADS_DIR || join(__dirname, '..', 'uploads')
 mkdirSync(uploadsDir, { recursive: true })
 const storage = multer.diskStorage({
   destination: uploadsDir,
@@ -389,8 +391,12 @@ entityCrud({
   ],
 })
 
-/* ------------------- Serve the built SPA in production -------------------- */
-const distDir = join(__dirname, '..', 'dist')
+/* ------------------- Serve the built SPA in production --------------------
+   When deployed as 2 separate services (recommended on Railway / Render /
+   Vercel split), the frontend is served by its own host and this block is
+   inert. For a monolithic prod check (`npm run build` in app/ then run this
+   server), it serves app/dist/ as a SPA fallback. Override via STATIC_DIR. */
+const distDir = process.env.STATIC_DIR || join(__dirname, '..', '..', 'app', 'dist')
 if (existsSync(distDir)) {
   app.use(express.static(distDir))
   app.use((req, res, next) => {
