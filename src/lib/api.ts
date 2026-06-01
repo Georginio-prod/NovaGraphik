@@ -17,13 +17,20 @@ export class ApiError extends Error {
   }
 }
 
+// In dev (and any deploy where the same origin serves the API), this is just
+// `/api`. In production splits (e.g. frontend on Vercel, backend on Render),
+// set VITE_API_BASE_URL to the full backend root, e.g.
+//   VITE_API_BASE_URL=https://novagraphik-api.onrender.com
+// (the `/api` suffix is added by this helper, do NOT include it in the env var)
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '') + '/api'
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   const token = await getAccessToken()
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
