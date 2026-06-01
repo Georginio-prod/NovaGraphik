@@ -1,0 +1,30 @@
+{
+  "name": "@novagraphik/app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview --host --port 4173",
+    "start": "vite preview --host --port ${PORT:-4173}"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.17.0",
+    "@nuxt/ui": "^4.8.1",
+    "@supabase/supabase-js": "^2.106.2",
+    "@unhead/vue": "^3.1.1",
+    "@vueuse/core": "^14.3.0",
+    "tailwindcss": "^4.3.0",
+    "vue": "^3.5.34",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12",
+    "vue-tsc": "^3.2.8"
+  }
+}

@@ -1,68 +1,145 @@
-# Déploiement Nova Graphik
+# Architecture & déploiement
 
-Le stack actuel sépare proprement **frontend statique** (Vite/Vue) et **backend Node**
-(Express + SQLite + uploads sur disque). Vercel seul ne peut pas tout porter à cause
-de SQLite et de l’écriture des images sur disque, donc on déploie en deux moitiés.
+## Structure du repo
+
+Monorepo npm avec deux *workspaces* indépendants :
 
 ```
-┌─────────────────────┐         ┌─────────────────────────┐
-│  Vercel (statique)  │  /api/* │  Render (Node + disque) │
-│  dist/  +  rewrite  │ ──────▶ │  node server/index.js   │
-│                     │ /uploads│  /var/data/data.sqlite  │
-└─────────────────────┘         └─────────────────────────┘
+NovaGraphik/
+├── app/                # Frontend Vue 3 + Vite + Tailwind v4
+│   ├── src/            # composants, pages, composables
+│   ├── public/         # assets statiques (logo, icons.svg)
+│   ├── index.html
+│   ├── vite.config.ts  # alias @ + proxy /api → backend
+│   ├── package.json
+│   ├── nixpacks.toml   # config Railway
+│   └── .env.example
+├── backend/            # Backend Express + SQLite + uploads disque
+│   ├── src/
+│   │   ├── index.js    # routes API
+│   │   ├── auth.js     # vérif JWT Supabase via JWKS
+│   │   └── db.js       # SQLite + seeds
+│   ├── uploads/        # médias (seeds samuel-*, wp-* en git, reste runtime)
+│   ├── data.sqlite     # créé au runtime, gitignored
+│   ├── package.json
+│   ├── nixpacks.toml   # config Railway
+│   └── .env.example
+├── package.json        # workspaces + scripts globaux dev/build
+├── railway.json
+└── README.md
 ```
 
-## 1. Backend sur Render
+Les deux workspaces partagent un seul `node_modules/` hoisté à la racine
+(grâce à `"workspaces": ["app", "backend"]`), donc **un seul `npm install`**
+à la racine installe tout.
 
-1. Crée un compte sur https://render.com (GitHub OAuth).
-2. **New → Blueprint**, sélectionne ce repo (`Georginio-prod/NovaGraphik`).
-   Render détecte `render.yaml` à la racine et propose la création du service +
-   du disque persistant.
-3. Renseigne les **deux variables** marquées `sync: false` :
-   - `VITE_SUPABASE_URL` → `https://iksyoxumzctnwxeziiad.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` → la valeur depuis `.env`
-4. Clique **Create resources**. Premier build = 2-3 min.
-5. Note l’URL publique attribuée (forme : `https://novagraphik-api.onrender.com`).
+## Quickstart local
 
-Notes utiles :
-- Le disque (`/var/data`, 1 GB) survit aux déploiements → SQLite et uploads
-  persistent.
-- Le free plan endort le service après 15 min sans trafic ; premier appel après
-  une pause = ~30 s de cold start.
-- Pour de la prod sérieuse, passer au plan **Starter** (~7 $/mois) qui garde
-  le service éveillé.
+```bash
+git clone git@github.com:Georginio-prod/NovaGraphik.git
+cd NovaGraphik
+npm install              # hoist app + backend deps
 
-## 2. Frontend sur Vercel
+# Copier les .env d'exemple et renseigner les vraies valeurs Supabase
+cp app/.env.example app/.env
+cp backend/.env.example backend/.env
 
-1. **Add New → Project**, sélectionne le repo (`develop`).
-2. Vercel lit `vercel.json` et utilise automatiquement `vite` comme framework.
-3. **Avant le premier déploiement**, édite `vercel.json` et remplace les deux
-   occurrences de `VOTRE-BACKEND.onrender.com` par l’URL Render obtenue à
-   l’étape précédente. Commit + push (`vercel` redéploiera tout seul).
-4. Dans **Project Settings → Environment Variables**, ajoute :
-   - `VITE_SUPABASE_URL` = `https://iksyoxumzctnwxeziiad.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` = (même valeur que sur Render)
-   - `VITE_API_BASE_URL` = `https://novagraphik-api.onrender.com`
+# Démarrer frontend (5173) + backend (3001) en parallèle
+npm run dev
+```
 
-   **⚠ Ne PAS** mettre `/api` à la fin de `VITE_API_BASE_URL` — le helper
-   `src/lib/api.ts` l’ajoute.
-5. Redéploie depuis l’onglet **Deployments**.
+Scripts globaux disponibles :
 
-## 3. Vérifs post-déploiement
+| Commande | Effet |
+|---|---|
+| `npm run dev` | lance frontend + backend en parallèle |
+| `npm run dev:app` | frontend seul |
+| `npm run dev:api` | backend seul (`node --watch`) |
+| `npm run build` | build prod du frontend → `app/dist/` |
 
-- `https://<vercel>/` → page d’accueil avec hero, services, portfolio teaser.
-- `https://<vercel>/admin/team` → page admin (login si pas connecté). Si tu
-  vois encore 404, vérifie que les `rewrites` de `vercel.json` matchent (ne
-  retire pas la regex « catch-all » de la 3ᵉ rewrite).
-- `https://<backend>/api/services` → JSON des 8 services. Si HTML/erreur,
-  Render n’a pas démarré → check les logs.
+## Déploiement sur Railway
 
-## Alternative envisagée plus tard : tout sur Vercel + Supabase Postgres
+Railway gère nativement les monorepos : on crée **deux services** dans le
+même projet, chacun avec sa "Root Directory" pointée sur un workspace.
 
-Ça nécessite :
-- Migrer le schéma SQLite (`server/db.js`) vers Postgres dans Supabase.
-- Migrer `server/uploads/` vers Supabase Storage.
-- Réécrire `server/index.js` en fonctions Vercel (`api/*.ts`) ou utiliser
-  directement `@supabase/supabase-js` côté frontend avec des RLS policies.
+### 1. Créer le projet Railway
 
-≈ 2 h de travail. À faire seulement si le free Render devient trop limitant.
+1. https://railway.app → **New Project** → **Deploy from GitHub repo**
+2. Sélectionne `Georginio-prod/NovaGraphik`, branche `develop`
+3. Railway propose un premier service par défaut — on va le configurer
+   pour le **backend**, puis on ajoutera le frontend.
+
+### 2. Service `backend`
+
+**Settings → General**
+- Root Directory : `backend`
+- Branch : `develop`
+- Watch Paths : `backend/**`
+
+**Settings → Variables** (ajoute) :
+
+| Clé | Valeur |
+|---|---|
+| `PORT` | `3001` |
+| `SUPABASE_URL` | `https://iksyoxumzctnwxeziiad.supabase.co` |
+| `DB_PATH` | `/data/data.sqlite` |
+| `UPLOADS_DIR` | `/data/uploads` |
+
+**Settings → Volumes → Add Volume**
+- Mount Path : `/data`
+- Taille : 1 GB (suffisant pour SQLite + uploads)
+
+→ Railway redéploie. Une fois UP, note l'URL publique
+(forme `https://novagraphik-backend-production.up.railway.app`).
+
+### 3. Service `app`
+
+Sur le même projet : **+ New → GitHub Repo** → même repo.
+
+**Settings → General**
+- Root Directory : `app`
+- Branch : `develop`
+- Watch Paths : `app/**`
+
+**Settings → Variables** :
+
+| Clé | Valeur |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://iksyoxumzctnwxeziiad.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | (la anon key Supabase) |
+| `VITE_API_BASE_URL` | l'URL du service backend (sans `/api` à la fin) |
+
+**Settings → Networking → Generate Domain**
+→ Railway expose le frontend sur une URL publique.
+
+### 4. Vérifs post-déploiement
+
+- `https://<frontend>.up.railway.app/` → page d'accueil chargée
+- `https://<frontend>.up.railway.app/admin/team` → page admin (login si besoin)
+- `https://<backend>.up.railway.app/api/services` → JSON des 8 services
+
+## Notes & considérations prod
+
+- **SQLite ↔ Volume** : avec le volume monté à `/data` et `DB_PATH=/data/data.sqlite`,
+  la base survit aux deploy. Les seeds s'appliquent automatiquement sur les
+  tables vides au premier démarrage (logique idempotente dans `backend/src/db.js`).
+- **Uploads** : `UPLOADS_DIR=/data/uploads` les met sur le même volume.
+- **JWKS** : pas de secret à gérer côté backend — l'URL est dérivée de
+  `SUPABASE_URL`. Si tu fais tourner sur un autre projet Supabase, change
+  uniquement `SUPABASE_URL` (et la `VITE_SUPABASE_URL` côté frontend).
+- **Backend = repo public** : aucun secret sensible (`SUPABASE_URL` peut être
+  exposé sans risque ; la signature des tokens reste vérifiée par la clé
+  publique JWKS).
+- **Cold start** : le free Railway endort le service après inactivité. Premier
+  appel après une pause = ~5–10 s. Pour de la prod sérieuse, plan payant.
+
+## Alternative : tout sur Railway dans un seul service ?
+
+Possible si tu veux simplifier au prix de la performance frontend :
+1. Garder uniquement le service `backend`
+2. Ajouter `npm install && npm run build` (qui build `app/`) dans la
+   commande d'install Nixpacks
+3. Le backend sert `app/dist/` via la SPA fallback déjà codée
+   (`STATIC_DIR` pointé sur `../app/dist`)
+
+Pas recommandé : on perd le CDN edge frontend et on couple le redémarrage.
