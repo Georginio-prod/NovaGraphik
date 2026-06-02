@@ -2,9 +2,16 @@ import { DatabaseSync } from 'node:sqlite'
 import bcrypt from 'bcryptjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { mkdirSync } from 'node:fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DB_PATH = process.env.DB_PATH || join(__dirname, 'data.sqlite')
+
+// Where the SQLite file lives. On Railway, mount a Volume and set DATA_DIR
+// (e.g. /data) so the database survives redeploys. DB_PATH overrides everything.
+const DATA_DIR = process.env.DATA_DIR || __dirname
+const DB_PATH = process.env.DB_PATH || join(DATA_DIR, 'data.sqlite')
+
+mkdirSync(dirname(DB_PATH), { recursive: true })
 
 export const db = new DatabaseSync(DB_PATH)
 
