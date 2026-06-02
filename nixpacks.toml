@@ -1,0 +1,19 @@
+# Monolithic Railway deploy (ONE service, Root Directory = repo root).
+# Builds the frontend, then runs the backend which serves app/dist + /api
+# + /uploads on a single origin. No VITE_API_BASE_URL needed (same origin).
+#
+# If instead you deploy two separate services, set each service's Root
+# Directory to `app` / `backend` and they will use app/nixpacks.toml /
+# backend/nixpacks.toml instead of this file.
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start:api"
