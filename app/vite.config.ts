@@ -25,5 +25,11 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  }
+  },
+  // `npm start` runs `vite preview`, whose host check blocks unknown domains.
+  // Allow any host so the app works behind any platform/proxy without
+  // hardcoding a provider-specific domain.
+  preview: {
+    allowedHosts: true,
+  },
 })
