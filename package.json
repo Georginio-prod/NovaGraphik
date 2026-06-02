@@ -6,6 +6,9 @@
     "app",
     "backend"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "concurrently -k -n app,api -c green,cyan \"npm -w @novagraphik/app run dev\" \"npm -w @novagraphik/backend run dev\"",
     "dev:app": "npm -w @novagraphik/app run dev",
