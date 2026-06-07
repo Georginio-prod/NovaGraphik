@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import { isVideoUrl } from '@/lib/media'
 import NIcon from '@/components/base/NIcon.vue'
+import VideoPlayer from '@/components/base/VideoPlayer.vue'
 
 // Fullscreen viewer for a single image or video. Shown at its natural aspect,
 // capped to the viewport — so any format (16:9, 9:16, …) can be enlarged.
@@ -27,13 +28,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
     >
       <NIcon name="x" :size="20" />
     </button>
-    <video
+    <VideoPlayer
       v-if="isVideo"
       :src="src"
-      controls
       autoplay
-      playsinline
-      class="max-h-[88vh] max-w-[94vw] rounded-lg bg-black"
+      :poster="false"
+      video-class="max-h-[88vh] max-w-[94vw] rounded-lg bg-black"
+      @click.stop
     />
     <img v-else :src="src" alt="" class="max-h-[88vh] max-w-[94vw] rounded-lg object-contain" />
   </div>

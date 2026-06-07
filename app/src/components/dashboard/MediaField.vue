@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { uploadImage } from '@/composables/useUpload'
-import { isVideoUrl, getMediaMeta, withRatio, ratioCss, posterSrc, VIDEO_FORMATS, DEFAULT_VIDEO_FORMAT } from '@/lib/media'
+import { isVideoUrl, getMediaMeta, withRatio, ratioCss, VIDEO_FORMATS, DEFAULT_VIDEO_FORMAT } from '@/lib/media'
 import NIcon from '@/components/base/NIcon.vue'
 import ImageCropper from './ImageCropper.vue'
 import MediaLightbox from '@/components/base/MediaLightbox.vue'
+import VideoPlayer from '@/components/base/VideoPlayer.vue'
 
 // Like ImageField but accepts videos too. Images go through the cropper +
 // downscale; videos upload as-is and preview in a <video>. Videos also get a
@@ -84,14 +85,7 @@ async function onCropConfirm(blob: Blob) {
 <template>
   <div>
     <div class="rounded-md border border-line overflow-hidden bg-nova-fog relative" :style="previewStyle">
-      <video
-        v-if="model && isVideo"
-        :src="posterSrc(model)"
-        controls
-        playsinline
-        preload="metadata"
-        class="w-full h-full object-contain bg-black"
-      />
+      <VideoPlayer v-if="model && isVideo" :src="model" class="h-full w-full" />
       <img v-else-if="model" :src="model" alt="" class="w-full h-full object-cover" />
       <div v-else class="w-full h-full grid place-items-center text-fg-3"><NIcon name="image" :size="24" /></div>
       <div v-if="busy" class="absolute inset-0 grid place-items-center bg-black/40 text-white text-[12px]">Envoi…</div>

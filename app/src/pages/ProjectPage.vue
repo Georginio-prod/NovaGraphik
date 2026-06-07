@@ -3,13 +3,14 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { api, type PortfolioItem } from '@/lib/api'
 import { novaGrad } from '@/lib/gradients'
-import { isVideoUrl, getMediaMeta, ratioCss, posterSrc } from '@/lib/media'
+import { isVideoUrl, getMediaMeta, ratioCss } from '@/lib/media'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 import MediaLightbox from '@/components/base/MediaLightbox.vue'
+import VideoPlayer from '@/components/base/VideoPlayer.vue'
 
 const route = useRoute()
 const item = ref<PortfolioItem | null>(null)
@@ -72,10 +73,10 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
               class="group relative w-full self-start overflow-hidden rounded-lg border border-line bg-black"
               :style="{ aspectRatio: ratioCss(getMediaMeta(media).ratio), maxHeight: '600px' }"
             >
-              <video :src="posterSrc(media)" controls playsinline preload="metadata" class="w-full h-full object-contain" />
+              <VideoPlayer :src="media" class="h-full w-full" />
               <button
                 type="button"
-                class="absolute right-2.5 top-2.5 grid h-9 w-9 place-items-center rounded-full bg-black/55 text-white opacity-0 transition-opacity duration-nova hover:bg-black/75 group-hover:opacity-100"
+                class="absolute right-2.5 top-2.5 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/55 text-white opacity-0 transition-opacity duration-nova hover:bg-black/75 group-hover:opacity-100"
                 title="Agrandir"
                 @click="lightboxSrc = media"
               >

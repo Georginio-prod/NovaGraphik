@@ -75,7 +75,19 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
     res.json({ url: `/uploads/${req.file.filename}` })
   })
 })
-app.use('/uploads', express.static(uploadsDir))
+// Serve media with broad-compatibility headers. express.static already honours
+// HTTP range requests (needed for video streaming/seek, esp. Safari). We relabel
+// .mov/.m4v as video/mp4 so browsers attempt to play H.264-in-MOV inline instead
+// of downloading it. (Truly incompatible codecs like HEVC still need transcoding.)
+app.use(
+  '/uploads',
+  express.static(uploadsDir, {
+    acceptRanges: true,
+    setHeaders: (res, filePath) => {
+      if (/\.(mov|m4v)$/i.test(filePath)) res.setHeader('Content-Type', 'video/mp4')
+    },
+  }),
+)
 
 /* ------------------------------- Sections -------------------------------- */
 app.get('/api/sections', (req, res) => {
