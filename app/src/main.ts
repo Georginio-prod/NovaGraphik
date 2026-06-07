@@ -5,6 +5,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ui from '@nuxt/ui/vue-plugin'
 import App from './App.vue'
 import { vReveal } from './directives/reveal'
+import { vEnter } from './directives/enter'
+import { ScrollTrigger } from './lib/gsap'
 import { useAuth } from './composables/useAuth'
 import { initTheme } from './composables/useTheme'
 
@@ -19,6 +21,7 @@ const router = createRouter({
     { path: '/contact', name: 'contact', component: () => import('./pages/ContactPage.vue') },
     { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue') },
     { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue') },
+    { path: '/site-web-vtc', name: 'vtc', component: () => import('./pages/VtcPage.vue') },
     { path: '/equipe/:slug', name: 'member', component: () => import('./pages/MemberPage.vue') },
     { path: '/portfolio/:slug', name: 'project', component: () => import('./pages/ProjectPage.vue') },
     { path: '/admin/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true } },
@@ -41,7 +44,22 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior() {
+  scrollBehavior(to) {
+    // Anchor links (e.g. /#equipe) scroll to the target. The element may render
+    // after async content loads, so poll briefly until it exists.
+    if (to.hash) {
+      return new Promise((resolve) => {
+        let tries = 0
+        const tryScroll = () => {
+          if (document.querySelector(to.hash) || tries++ > 20) {
+            resolve({ el: to.hash, behavior: 'smooth' })
+          } else {
+            setTimeout(tryScroll, 60)
+          }
+        }
+        tryScroll()
+      })
+    }
     return { top: 0 }
   },
 })
@@ -59,10 +77,22 @@ router.beforeEach(async (to) => {
   return true
 })
 
+// Recompute ScrollTrigger start/end positions once a new page has painted.
+// Pages load content asynchronously (services, team, portfolio…), which shifts
+// layout after triggers are created; without a refresh, some reveals never fire.
+router.afterEach(() => {
+  requestAnimationFrame(() => ScrollTrigger.refresh())
+})
+
 const app = createApp(App)
 
 app.use(router)
 app.use(ui)
 app.directive('reveal', vReveal)
+app.directive('enter', vEnter)
 
 app.mount('#app')
+
+// Late-loading assets (fonts, images) change layout; refresh trigger positions
+// after full load so below-the-fold reveals stay accurate.
+window.addEventListener('load', () => ScrollTrigger.refresh())

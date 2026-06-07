@@ -181,7 +181,7 @@ async function onDrop() {
       <div class="mt-3 grid grid-cols-1 tab:grid-cols-[160px_1fr] gap-5 items-start">
         <div>
           <label class="block text-[11px] font-semibold tracking-wider uppercase text-fg-2 mb-2">Photo</label>
-          <ImageField v-model="cur.photo" :height="160" @update:model-value="onEdit" />
+          <ImageField v-model="cur.photo" :height="160" :aspect="1" round @update:model-value="onEdit" />
         </div>
         <div>
           <label class="block text-[11px] font-semibold tracking-wider uppercase text-fg-2">Nom</label>

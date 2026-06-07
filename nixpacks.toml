@@ -1,10 +1,9 @@
-# Monolithic Railway deploy (ONE service, Root Directory = repo root).
-# Builds the frontend, then runs the backend which serves app/dist + /api
-# + /uploads on a single origin. No VITE_API_BASE_URL needed (same origin).
+# Railway / Nixpacks — single STATIC frontend service (Root Directory = repo root).
+# The app talks directly to Supabase (Postgres + Storage); there is no backend.
+# Build the Vue app, then serve app/dist statically via `vite preview`.
 #
-# If instead you deploy two separate services, set each service's Root
-# Directory to `app` / `backend` and they will use app/nixpacks.toml /
-# backend/nixpacks.toml instead of this file.
+# Required env vars on the service:
+#   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_BUCKET=media
 
 [phases.setup]
 nixPkgs = ["nodejs_22"]
@@ -16,4 +15,7 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npm run start:api"
+cmd = "npm start"
+
+[variables]
+NODE_ENV = "production"

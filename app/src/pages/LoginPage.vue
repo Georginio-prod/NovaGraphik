@@ -38,7 +38,7 @@ async function submit() {
       alt=""
       class="absolute -right-[120px] -bottom-[120px] w-[520px] opacity-[0.07] pointer-events-none"
     />
-    <div class="relative w-full max-w-[420px] bg-nova-surface rounded-xl p-10 shadow-nova-lg nova-enter nova-enter-1">
+    <div v-enter="0" class="relative w-full max-w-[420px] bg-nova-surface rounded-xl p-10 shadow-nova-lg">
       <img src="/assets/logo-nova-graphik.png" alt="Nova Graphik" class="w-[130px] mb-6" />
       <NEyebrow on-dark class="mb-2.5">Espace administrateur</NEyebrow>
       <h1 class="font-display text-[34px] font-semibold my-1.5 text-fg-1 tracking-tight">Connexion</h1>

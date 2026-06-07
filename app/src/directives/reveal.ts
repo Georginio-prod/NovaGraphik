@@ -1,43 +1,70 @@
-import type { Directive } from 'vue'
+import type { Directive, DirectiveBinding } from 'vue'
+import { gsap, ScrollTrigger, NOVA, prefersReducedMotion } from '@/lib/gsap'
 
-// Scroll-reveal: gentle fade + upward motion as elements enter the viewport.
-// Restrained per the brand spec (ease-out, ~420ms, no bounce). A numeric binding
-// value sets a stagger delay in ms (e.g. v-reveal="i * 60"). Respects
-// prefers-reduced-motion by leaving content fully visible.
-type RevealValue = number | { delay?: number } | undefined
+// Scroll-reveal driven by GSAP ScrollTrigger, with several motion variants so
+// sections feel distinct as you scroll. The directive ARG picks the effect:
+//   v-reveal            → rise up (default)
+//   v-reveal:left       → slide in from the left
+//   v-reveal:right      → slide in from the right
+//   v-reveal:scale      → scale + fade in
+//   v-reveal:down       → drop down
+//   v-reveal:fade       → opacity only
+// The binding VALUE is a stagger delay in ms (e.g. v-reveal:left="i * 80"),
+// or an object { delay, distance }. Respects prefers-reduced-motion.
+type RevealValue = number | { delay?: number; distance?: number } | undefined
+type RevealEl = HTMLElement & { [TWEEN]?: gsap.core.Tween }
 
-const prefersReduced =
-  typeof window !== 'undefined' &&
-  window.matchMedia &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const TWEEN = Symbol('revealTween')
 
-const OBS = Symbol('revealObserver')
+function fromVars(arg: string | undefined, distance: number): gsap.TweenVars {
+  switch (arg) {
+    case 'left':
+      return { opacity: 0, x: -distance }
+    case 'right':
+      return { opacity: 0, x: distance }
+    case 'down':
+      return { opacity: 0, y: -distance }
+    case 'scale':
+      return { opacity: 0, scale: 0.9 }
+    case 'fade':
+      return { opacity: 0 }
+    case 'up':
+    default:
+      return { opacity: 0, y: distance }
+  }
+}
 
-export const vReveal: Directive<HTMLElement & { [OBS]?: IntersectionObserver }, RevealValue> = {
-  mounted(el, binding) {
-    if (prefersReduced) return
+function build(el: RevealEl, binding: DirectiveBinding<RevealValue>) {
+  if (prefersReducedMotion) return
 
-    const delay =
-      typeof binding.value === 'number' ? binding.value : binding.value?.delay ?? 0
-    if (delay) el.style.transitionDelay = `${delay}ms`
+  const v = binding.value
+  const delayMs = typeof v === 'number' ? v : v?.delay ?? 0
+  const distance = (typeof v === 'object' && v?.distance) || 42
 
-    el.classList.add('reveal-init')
+  el[TWEEN] = gsap.from(el, {
+    ...fromVars(binding.arg, distance),
+    duration: 0.62,
+    delay: delayMs / 1000,
+    ease: NOVA.ease,
+    scrollTrigger: {
+      trigger: el,
+      start: 'top 88%',
+      // Replay every time the element scrolls back into view (not just once),
+      // so the motion is a permanent part of the page rather than a one-shot.
+      toggleActions: 'play none none reverse',
+    },
+  })
+}
 
-    const observer = new IntersectionObserver(
-      (entries, obs) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            el.classList.add('reveal-in')
-            obs.unobserve(el)
-          }
-        }
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
-    )
-    observer.observe(el)
-    el[OBS] = observer
-  },
-  unmounted(el) {
-    el[OBS]?.disconnect()
-  },
+function teardown(el: RevealEl) {
+  el[TWEEN]?.scrollTrigger?.kill()
+  el[TWEEN]?.kill()
+  ScrollTrigger.getAll()
+    .filter((t) => t.trigger === el)
+    .forEach((t) => t.kill())
+}
+
+export const vReveal: Directive<RevealEl, RevealValue> = {
+  mounted: build,
+  unmounted: teardown,
 }

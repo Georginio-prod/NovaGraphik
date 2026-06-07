@@ -12,6 +12,13 @@ defineProps<{
 }>()
 
 const SERVICE_COUNT = 8
+
+// On the home page the team section is already in the DOM, so scroll to it
+// directly (Vue Router doesn't re-scroll for same-page hash changes). The
+// `to="/#equipe"` still updates the URL; scrollBehavior covers cross-page nav.
+function goToTeam() {
+  document.getElementById('equipe')?.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -24,7 +31,7 @@ const SERVICE_COUNT = 8
     <NContainer>
       <div class="grid grid-cols-1 desk:grid-cols-[1.2fr_1fr] gap-12 desk:gap-20 items-center relative">
         <!-- Left: text -->
-        <div v-reveal>
+        <div v-reveal:left>
           <NEyebrow class="mb-4">{{ section.type }}</NEyebrow>
           <h2 class="font-display font-semibold text-[clamp(30px,4.2vw,52px)] leading-[1.1] tracking-tight text-fg-1 m-0 mb-6">
             {{ section.title }}
@@ -33,13 +40,13 @@ const SERVICE_COUNT = 8
             {{ section.body }}
           </p>
           <div class="flex flex-wrap gap-3">
-            <NButton variant="primary" icon="arrow-right" to="/#equipe">Découvrir l'équipe</NButton>
+            <NButton variant="primary" icon="arrow-right" @click="goToTeam">Découvrir l'équipe</NButton>
             <NButton variant="ghost" icon="arrow-up-right" to="/portfolios">Voir nos réalisations</NButton>
           </div>
         </div>
 
         <!-- Right: stats grid -->
-        <div v-reveal="120" class="grid grid-cols-2 gap-3 tab:gap-4">
+        <div v-reveal:right="120" class="grid grid-cols-2 gap-3 tab:gap-4">
           <div class="bg-nova-surface border border-line rounded-lg p-5 tab:p-6 text-center transition-all duration-nova hover:border-nova-teal-300 hover:shadow-nova-sm">
             <div class="font-display text-[clamp(36px,5vw,52px)] font-semibold text-nova-teal leading-none">{{ teamCount ?? 5 }}</div>
             <div class="font-glyphic text-[10px] tracking-[0.18em] uppercase text-fg-3 mt-2">Membres</div>
