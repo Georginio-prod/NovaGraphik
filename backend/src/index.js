@@ -5,7 +5,7 @@ import multer from 'multer'
 import { randomUUID } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync } from 'node:fs'
 import { db, seed, slugify, uniqueSlug } from './db.js'
 import { requireAdmin } from './auth.js'
 
@@ -50,15 +50,21 @@ const storage = multer.diskStorage({
     cb(null, randomUUID() + ext)
   },
 })
-// Allow large media (high-res photos & videos). Files stream to disk, so a high
-// cap is cheap on memory. Override with MAX_UPLOAD_MB if a platform needs less.
-const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 512)
-const upload = multer({ storage, limits: { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } })
+// Admin media uploads (high-res photos & videos). Files stream to disk, so size
+// is cheap on memory. No size cap by default so large videos go through; set
+// MAX_UPLOAD_MB to enforce one (e.g. on a constrained platform).
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 0) // 0 = unlimited
+const upload = multer({
+  storage,
+  limits: MAX_UPLOAD_MB > 0 ? { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } : undefined,
+})
 app.post('/api/admin/upload', requireAdmin, (req, res) => {
   // Wrap multer so its errors (e.g. file too large) return clean JSON instead
   // of an HTML 500 — the client surfaces this message to the user.
   upload.single('file')(req, res, (err) => {
     if (err) {
+      // Best-effort: drop any partial file multer wrote before aborting.
+      if (req.file?.path) rmSync(req.file.path, { force: true })
       const msg =
         err.code === 'LIMIT_FILE_SIZE'
           ? `Fichier trop lourd (${MAX_UPLOAD_MB} Mo maximum).`
