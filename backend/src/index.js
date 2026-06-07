@@ -51,9 +51,20 @@ const storage = multer.diskStorage({
   },
 })
 const upload = multer({ storage, limits: { fileSize: 8 * 1024 * 1024 } })
-app.post('/api/admin/upload', requireAdmin, upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' })
-  res.json({ url: `/uploads/${req.file.filename}` })
+app.post('/api/admin/upload', requireAdmin, (req, res) => {
+  // Wrap multer so its errors (e.g. file too large) return clean JSON instead
+  // of an HTML 500 — the client surfaces this message to the user.
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      const msg =
+        err.code === 'LIMIT_FILE_SIZE'
+          ? 'Image trop lourde (8 Mo maximum).'
+          : 'Échec du téléversement.'
+      return res.status(400).json({ error: msg })
+    }
+    if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' })
+    res.json({ url: `/uploads/${req.file.filename}` })
+  })
 })
 app.use('/uploads', express.static(uploadsDir))
 
