@@ -3,21 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "workspaces": [
-    "app",
-    "backend"
+    "app"
   ],
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "concurrently -k -n app,api -c green,cyan \"npm -w @novagraphik/app run dev\" \"npm -w @novagraphik/backend run dev\"",
-    "dev:app": "npm -w @novagraphik/app run dev",
-    "dev:api": "npm -w @novagraphik/backend run dev",
+    "dev": "npm -w @novagraphik/app run dev",
     "build": "npm -w @novagraphik/app run build",
-    "start:app": "npm -w @novagraphik/app run start",
-    "start:api": "npm -w @novagraphik/backend run start"
-  },
-  "devDependencies": {
-    "concurrently": "^10.0.0"
+    "start": "npm -w @novagraphik/app run start",
+    "migrate:supabase": "node --experimental-strip-types scripts/migrate-to-supabase.ts"
   }
 }

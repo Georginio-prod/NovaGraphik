@@ -44,7 +44,7 @@ Tes données vivent aujourd'hui dans le SQLite + le dossier uploads du backend
    SUPABASE_SERVICE_ROLE_KEY=<service-role-key> \
    DB_PATH=./backend/data.sqlite \
    UPLOADS_DIR=./backend/uploads \
-   node scripts/migrate-to-supabase.mjs
+   npm run migrate:supabase
    ```
 
    Le script : téléverse tous les fichiers dans le bucket `media`, copie chaque
