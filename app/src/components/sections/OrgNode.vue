@@ -3,38 +3,78 @@ import { RouterLink } from 'vue-router'
 import { novaGrad } from '@/lib/gradients'
 import type { TeamMember } from '@/lib/api'
 
+// Recursive org-chart node. Connectors are REAL elements (not CSS pseudo-
+// elements) so GSAP can "draw" them: vertical stubs scale on Y, horizontal
+// bars scale on X. `data-org` + `data-depth` let the parent chart sequence the
+// reveal by level. Works for any number of children / depth from the dashboard.
 defineOptions({ name: 'OrgNode' })
-defineProps<{ node: TeamMember & { children: any[] }; idx?: number }>()
+withDefaults(defineProps<{ node: TeamMember & { children: any[] }; idx?: number; depth?: number }>(), {
+  idx: 0,
+  depth: 0,
+})
+
+const LINE = 'bg-fg-1' // diagram-style ink line, adapts to light/dark
 </script>
 
 <template>
-  <li
-    class="relative list-none pt-6 px-3 text-center align-top
-      before:content-[''] before:absolute before:top-0 before:right-1/2 before:w-1/2 before:h-6 before:border-t before:border-line
-      after:content-[''] after:absolute after:top-0 after:left-1/2 after:w-1/2 after:h-6 after:border-t after:border-line
-      only:before:hidden only:after:hidden only:pt-0
-      first:before:border-0 last:after:border-0
-      last:before:border-r last:before:border-line last:before:rounded-tr-md
-      first:after:rounded-tl-md"
-  >
-    <RouterLink :to="`/equipe/${node.slug}`" class="inline-flex flex-col items-center w-[150px] no-underline group">
-      <div
-        class="w-[84px] h-[84px] rounded-full overflow-hidden ring-2 ring-line group-hover:ring-nova-lime transition-all duration-nova"
-        :style="!node.photo ? { background: novaGrad(idx || 0) } : {}"
+  <div class="flex flex-col items-center">
+    <!-- Root crown: a short stub rising from the top node, like the diagram -->
+    <div
+      v-if="depth === 0"
+      data-org="line"
+      :data-depth="0"
+      class="org-vline h-6 w-[2px] origin-bottom"
+      :class="LINE"
+    ></div>
+
+    <!-- Member card -->
+    <div data-org="card" :data-depth="depth" class="org-card">
+      <RouterLink
+        :to="`/equipe/${node.slug}`"
+        class="group flex w-[150px] flex-col items-center no-underline"
       >
-        <img v-if="node.photo" :src="node.photo" :alt="node.name" class="w-full h-full object-cover" />
-      </div>
-      <div class="font-display text-[17px] font-semibold text-fg-1 mt-3 group-hover:text-nova-teal transition-colors duration-nova">
-        {{ node.name }}
-      </div>
-      <div class="font-glyphic text-[10px] tracking-[0.18em] uppercase text-nova-teal">{{ node.role }}</div>
-    </RouterLink>
-    <ul
-      v-if="node.children && node.children.length"
-      class="flex justify-center relative
-        before:content-[''] before:absolute before:top-0 before:left-1/2 before:border-l before:border-line before:h-6 before:w-0"
-    >
-      <OrgNode v-for="(c, i) in node.children" :key="c.id" :node="c" :idx="i" />
-    </ul>
-  </li>
+        <div
+          class="h-[78px] w-[78px] overflow-hidden rounded-full ring-2 ring-line transition-all duration-nova ease-nova group-hover:-translate-y-0.5 group-hover:ring-nova-lime group-hover:shadow-nova-md"
+          :style="!node.photo ? { background: novaGrad(idx) } : {}"
+        >
+          <img v-if="node.photo" :src="node.photo" :alt="node.name" class="h-full w-full object-cover" />
+        </div>
+        <div class="mt-2.5 font-display text-[16px] font-semibold text-fg-1 transition-colors duration-nova group-hover:text-nova-teal">
+          {{ node.name }}
+        </div>
+        <div class="mt-0.5 font-glyphic text-[9.5px] uppercase tracking-[0.18em] text-nova-teal">{{ node.role }}</div>
+      </RouterLink>
+    </div>
+
+    <!-- Children: vertical stub from this node down to the horizontal bar -->
+    <div v-if="node.children && node.children.length" class="flex flex-col items-center">
+      <div data-org="line" :data-depth="depth + 1" class="org-vline h-6 w-[2px] origin-top" :class="LINE"></div>
+      <ul class="flex list-none items-start justify-center p-0">
+        <li
+          v-for="(c, i) in node.children"
+          :key="c.id"
+          class="relative flex flex-col items-center px-3 tab:px-5"
+        >
+          <!-- Horizontal bar segments: left/right halves join adjacent siblings -->
+          <div
+            v-if="i !== 0"
+            data-org="bar"
+            :data-depth="depth + 1"
+            class="org-hbar absolute left-0 top-0 h-[2px] w-1/2 origin-center"
+            :class="LINE"
+          ></div>
+          <div
+            v-if="i !== node.children.length - 1"
+            data-org="bar"
+            :data-depth="depth + 1"
+            class="org-hbar absolute right-0 top-0 h-[2px] w-1/2 origin-center"
+            :class="LINE"
+          ></div>
+          <!-- Vertical stub from the bar down into the child card -->
+          <div data-org="line" :data-depth="depth + 1" class="org-vline h-6 w-[2px] origin-top" :class="LINE"></div>
+          <OrgNode :node="c" :idx="i" :depth="depth + 1" />
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
