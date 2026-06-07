@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { api, type PortfolioItem } from '@/lib/api'
 import { novaGrad } from '@/lib/gradients'
-import { isVideoUrl } from '@/lib/media'
+import { isVideoUrl, getMediaMeta, ratioCss } from '@/lib/media'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
@@ -63,21 +63,20 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
 
         <div v-if="item.images && item.images.length" class="grid grid-cols-2 tab:grid-cols-3 gap-[18px] mt-10">
           <template v-for="(media, i) in item.images" :key="i">
-            <video
+            <div
               v-if="isVideoUrl(media)"
-              :src="media"
-              controls
-              playsinline
-              preload="metadata"
               v-reveal="(i % 3) * 60"
-              class="w-full h-[240px] object-cover rounded-lg border border-line bg-black"
-            />
+              class="w-full self-start overflow-hidden rounded-lg border border-line bg-black"
+              :style="{ aspectRatio: ratioCss(getMediaMeta(media).ratio), maxHeight: '600px' }"
+            >
+              <video :src="media" controls playsinline preload="metadata" class="w-full h-full object-contain" />
+            </div>
             <img
               v-else
               :src="media"
               alt=""
               v-reveal="(i % 3) * 60"
-              class="w-full h-[240px] object-cover rounded-lg border border-line"
+              class="w-full h-[240px] self-start object-cover rounded-lg border border-line"
             />
           </template>
         </div>
