@@ -61,19 +61,6 @@
   --duration-nova-fast: 140ms;
   --duration-nova: 240ms;
   --duration-nova-slow: 420ms;
-
-  --animate-nova-enter: nova-enter var(--duration-nova-slow) var(--ease-nova) forwards;
-
-  @keyframes nova-enter {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
 }
 
 @layer base {
@@ -123,49 +110,6 @@
   }
 }
 
-@utility reveal-init {
-  opacity: 0;
-  transform: translateY(18px);
-  transition:
-    opacity var(--duration-nova-slow) var(--ease-nova),
-    transform var(--duration-nova-slow) var(--ease-nova);
-  will-change: opacity, transform;
-}
-
-@utility reveal-in {
-  opacity: 1;
-  transform: none;
-}
-
-@utility nova-enter {
-  opacity: 0;
-  animation: var(--animate-nova-enter);
-}
-
-@utility nova-enter-1 {
-  animation-delay: 60ms;
-}
-
-@utility nova-enter-2 {
-  animation-delay: 150ms;
-}
-
-@utility nova-enter-3 {
-  animation-delay: 240ms;
-}
-
-@utility nova-enter-4 {
-  animation-delay: 330ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal-init {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .nova-enter {
-    opacity: 1 !important;
-    animation: none !important;
-  }
-}
+/* Scroll reveals and entrance animations are now driven by GSAP
+   (see src/lib/gsap.ts and src/directives/{reveal,enter}.ts), which honours
+   prefers-reduced-motion by skipping the tweens entirely. */

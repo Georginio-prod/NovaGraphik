@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { gsap, prefersReducedMotion } from '@/lib/gsap'
 import { useViewport } from '@/composables/useViewport'
 import { useSiteContent } from '@/composables/useSiteContent'
 import NContainer from '@/components/base/NContainer.vue'
@@ -44,11 +45,38 @@ const site = useSiteContent('home')
 const { customSections } = site
 const { members: teamMembers, load: loadTeam } = useTeam()
 const { items: portfolioItems, load: loadPortfolio } = usePortfolio()
+// Hero compass: a slow, subtle parallax + drift as the hero scrolls away.
+const heroSection = ref<HTMLElement | null>(null)
+const heroMark = ref<HTMLImageElement | null>(null)
+let heroParallax: gsap.core.Tween | null = null
+
 onMounted(() => {
   site.load()
   loadTeam()
   loadPortfolio()
   loadServices()
+
+  if (!prefersReducedMotion && heroMark.value && heroSection.value) {
+    // Own the transform from GSAP: yPercent -50 reproduces the Tailwind
+    // `-translate-y-1/2` centering, then we drift down + rotate on scroll.
+    gsap.set(heroMark.value, { yPercent: -50 })
+    heroParallax = gsap.to(heroMark.value, {
+      yPercent: -32,
+      rotate: 12,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: heroSection.value,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      },
+    })
+  }
+})
+
+onBeforeUnmount(() => {
+  heroParallax?.scrollTrigger?.kill()
+  heroParallax?.kill()
 })
 
 // Distinct categories with the first item's cover as the category card image —
@@ -96,25 +124,27 @@ const heroParts = computed(() => {
 
 <template>
   <div>
-    <section class="bg-gradient-to-br from-nova-navy-900 from-0% via-nova-navy via-45% to-nova-teal-deep relative overflow-hidden">
+    <section ref="heroSection" class="bg-gradient-to-br from-nova-navy-900 from-0% via-nova-navy via-45% to-nova-teal-deep relative overflow-hidden">
       <img
+        ref="heroMark"
         src="/assets/compass-mark-white.png"
         alt=""
-        class="absolute -right-[120px] top-1/2 -translate-y-1/2 w-[620px] opacity-[0.07] pointer-events-none"
+        class="absolute -right-[120px] top-1/2 -translate-y-1/2 w-[620px] opacity-[0.07] pointer-events-none will-change-transform"
       />
       <NContainer>
         <div class="relative" :class="isMobile ? 'py-16 pb-[72px]' : 'py-[110px] pb-[120px]'">
-          <NEyebrow on-dark class="nova-enter nova-enter-1 mb-[22px]">Agence créative · Communication visuelle</NEyebrow>
+          <NEyebrow on-dark v-enter="0" class="mb-[22px]">Agence créative · Communication visuelle</NEyebrow>
           <h1
-            class="font-display font-semibold text-white text-[clamp(44px,7vw,84px)] leading-[0.98] tracking-tight m-0 max-w-[900px] nova-enter nova-enter-2"
+            v-enter="1"
+            class="font-display font-semibold text-white text-[clamp(44px,7vw,84px)] leading-[0.98] tracking-tight m-0 max-w-[900px]"
           >
             <template v-if="heroParts.accent">{{ heroParts.before }}<br /><span class="italic text-nova-lime">{{ heroParts.accent }}</span>{{ heroParts.after }}</template>
             <template v-else>{{ heroParts.before }}</template>
           </h1>
-          <p class="text-[19px] leading-relaxed text-fg-on-dark-2 max-w-[560px] my-7 mb-10 nova-enter nova-enter-3">
+          <p v-enter="2" class="text-[19px] leading-relaxed text-fg-on-dark-2 max-w-[560px] my-7 mb-10">
             {{ site.body('Hero', HERO_SUB_DEFAULT) }}
           </p>
-          <div class="flex gap-3.5 flex-wrap nova-enter nova-enter-4">
+          <div v-enter="3" class="flex gap-3.5 flex-wrap">
             <NButton variant="accent" size="lg" icon="arrow-right" to="/contact">Demander un devis</NButton>
             <NButton variant="ghostDark" size="lg" to="/portfolios">Découvrir nos services</NButton>
           </div>
@@ -136,7 +166,7 @@ const heroParts = computed(() => {
           <ServiceCard
             v-for="(s, i) in SERVICES"
             :key="(s as any).id ?? (s as any).title"
-            v-reveal="i * 60"
+            v-reveal:scale="i * 60"
             :icon="(s as any).icon"
             :title="(s as any).title"
             :desc="(s as any).description"
