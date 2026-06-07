@@ -12,6 +12,13 @@ defineProps<{
 }>()
 
 const SERVICE_COUNT = 8
+
+// On the home page the team section is already in the DOM, so scroll to it
+// directly (Vue Router doesn't re-scroll for same-page hash changes). The
+// `to="/#equipe"` still updates the URL; scrollBehavior covers cross-page nav.
+function goToTeam() {
+  document.getElementById('equipe')?.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -33,7 +40,7 @@ const SERVICE_COUNT = 8
             {{ section.body }}
           </p>
           <div class="flex flex-wrap gap-3">
-            <NButton variant="primary" icon="arrow-right" to="/#equipe">Découvrir l'équipe</NButton>
+            <NButton variant="primary" icon="arrow-right" @click="goToTeam">Découvrir l'équipe</NButton>
             <NButton variant="ghost" icon="arrow-up-right" to="/portfolios">Voir nos réalisations</NButton>
           </div>
         </div>

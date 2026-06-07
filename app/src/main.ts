@@ -44,7 +44,22 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior() {
+  scrollBehavior(to) {
+    // Anchor links (e.g. /#equipe) scroll to the target. The element may render
+    // after async content loads, so poll briefly until it exists.
+    if (to.hash) {
+      return new Promise((resolve) => {
+        let tries = 0
+        const tryScroll = () => {
+          if (document.querySelector(to.hash) || tries++ > 20) {
+            resolve({ el: to.hash, behavior: 'smooth' })
+          } else {
+            setTimeout(tryScroll, 60)
+          }
+        }
+        tryScroll()
+      })
+    }
     return { top: 0 }
   },
 })
