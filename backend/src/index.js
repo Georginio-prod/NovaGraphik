@@ -50,7 +50,9 @@ const storage = multer.diskStorage({
     cb(null, randomUUID() + ext)
   },
 })
-const upload = multer({ storage, limits: { fileSize: 8 * 1024 * 1024 } })
+// Allow large media (videos) — images are downscaled client-side so stay tiny.
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 100)
+const upload = multer({ storage, limits: { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } })
 app.post('/api/admin/upload', requireAdmin, (req, res) => {
   // Wrap multer so its errors (e.g. file too large) return clean JSON instead
   // of an HTML 500 — the client surfaces this message to the user.
@@ -58,7 +60,7 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
     if (err) {
       const msg =
         err.code === 'LIMIT_FILE_SIZE'
-          ? 'Image trop lourde (8 Mo maximum).'
+          ? `Fichier trop lourd (${MAX_UPLOAD_MB} Mo maximum).`
           : 'Échec du téléversement.'
       return res.status(400).json({ error: msg })
     }

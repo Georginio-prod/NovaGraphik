@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { api, type PortfolioItem } from '@/lib/api'
 import { novaGrad } from '@/lib/gradients'
+import { isVideoUrl } from '@/lib/media'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
@@ -61,14 +62,24 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
         </p>
 
         <div v-if="item.images && item.images.length" class="grid grid-cols-2 tab:grid-cols-3 gap-[18px] mt-10">
-          <img
-            v-for="(img, i) in item.images"
-            :key="i"
-            :src="img"
-            alt=""
-            v-reveal="(i % 3) * 60"
-            class="w-full h-[240px] object-cover rounded-lg border border-line"
-          />
+          <template v-for="(media, i) in item.images" :key="i">
+            <video
+              v-if="isVideoUrl(media)"
+              :src="media"
+              controls
+              playsinline
+              preload="metadata"
+              v-reveal="(i % 3) * 60"
+              class="w-full h-[240px] object-cover rounded-lg border border-line bg-black"
+            />
+            <img
+              v-else
+              :src="media"
+              alt=""
+              v-reveal="(i % 3) * 60"
+              class="w-full h-[240px] object-cover rounded-lg border border-line"
+            />
+          </template>
         </div>
 
         <div class="mt-12 flex flex-wrap gap-3">

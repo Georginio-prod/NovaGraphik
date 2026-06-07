@@ -6,6 +6,7 @@ import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import { novaGrad } from '@/lib/gradients'
 import ImageField from '@/components/dashboard/ImageField.vue'
+import MediaField from '@/components/dashboard/MediaField.vue'
 
 const inputClass =
   'w-full box-border font-sans text-fg-1 bg-nova-paper border border-line-strong rounded-sm px-3.5 py-3 outline-none mt-2 transition-[border-color,box-shadow,background] duration-nova focus:border-nova-lime focus:shadow-[0_0_0_3px_rgba(12,242,93,0.18)] focus:bg-nova-surface'
@@ -206,10 +207,11 @@ async function onDrop() {
       <label :class="labelClass">Lien externe (projet en ligne)</label>
       <input v-model="cur.external_url" :class="inputClass" placeholder="https://… (optionnel)" @input="onEdit" />
 
-      <label :class="labelClass">Galerie d'images</label>
+      <label :class="labelClass">Galerie (images & vidéos)</label>
+      <p class="text-[12px] text-fg-3 mt-1">Ajoutez des photos ou des vidéos (.mp4, .webm…). Les vidéos sont lisibles sur la page projet.</p>
       <div class="grid grid-cols-2 tab:grid-cols-3 gap-3 mt-2">
         <div v-for="(img, i) in cur.images" :key="i" class="relative">
-          <ImageField :model-value="img" :height="110" @update:model-value="(v: string) => setImage(i, v)" />
+          <MediaField :model-value="img" :height="110" @update:model-value="(v: string) => setImage(i, v)" />
           <button class="absolute top-1 right-1 bg-nova-surface/90 rounded p-1 text-fg-3 hover:text-err shadow-nova-xs" title="Retirer" @click="removeImage(i)">
             <NIcon name="trash-2" :size="13" />
           </button>
@@ -218,7 +220,7 @@ async function onDrop() {
           class="h-[110px] rounded-md border-[1.5px] border-dashed border-line-strong text-nova-teal text-[12px] font-semibold grid place-items-center hover:border-nova-teal"
           @click="addImage"
         >
-          <span class="flex flex-col items-center gap-1"><NIcon name="plus" :size="16" /> Image</span>
+          <span class="flex flex-col items-center gap-1"><NIcon name="plus" :size="16" /> Image / vidéo</span>
         </button>
       </div>
 
