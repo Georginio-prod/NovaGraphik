@@ -7,13 +7,12 @@ import NIcon from '@/components/base/NIcon.vue'
 // subject (e.g. a face), then we render the visible region to a canvas and emit
 // a downscaled JPEG Blob — which also keeps uploads well under the server limit.
 const props = withDefaults(
-  defineProps<{ src: string; aspect?: number; round?: boolean }>(),
-  { round: false },
+  defineProps<{ src: string; aspect?: number; round?: boolean; output?: number }>(),
+  { round: false, output: 1920 },
 )
 const emit = defineEmits<{ (e: 'confirm', blob: Blob): void; (e: 'cancel'): void }>()
 
 const VIEW_W = 320
-const OUTPUT_LONG = 1000 // capped output long-edge → small files, sharp avatars
 
 const imgEl = ref<HTMLImageElement | null>(null)
 const nat = reactive({ w: 0, h: 0 })
@@ -98,8 +97,10 @@ function confirm() {
   const sy = -ty.value / scale.value
   const sw = VIEW_W / scale.value
   const sh = viewH.value / scale.value
-  const outW = effAspect.value >= 1 ? OUTPUT_LONG : Math.round(OUTPUT_LONG * effAspect.value)
-  const outH = effAspect.value >= 1 ? Math.round(OUTPUT_LONG / effAspect.value) : OUTPUT_LONG
+  // Never upscale past the source resolution of the cropped region.
+  const long = Math.min(props.output, Math.max(sw, sh))
+  const outW = effAspect.value >= 1 ? long : Math.round(long * effAspect.value)
+  const outH = effAspect.value >= 1 ? Math.round(long / effAspect.value) : long
   const canvas = document.createElement('canvas')
   canvas.width = outW
   canvas.height = outH

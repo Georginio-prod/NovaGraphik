@@ -50,8 +50,9 @@ const storage = multer.diskStorage({
     cb(null, randomUUID() + ext)
   },
 })
-// Allow large media (videos) — images are downscaled client-side so stay tiny.
-const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 100)
+// Allow large media (high-res photos & videos). Files stream to disk, so a high
+// cap is cheap on memory. Override with MAX_UPLOAD_MB if a platform needs less.
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 512)
 const upload = multer({ storage, limits: { fileSize: MAX_UPLOAD_MB * 1024 * 1024 } })
 app.post('/api/admin/upload', requireAdmin, (req, res) => {
   // Wrap multer so its errors (e.g. file too large) return clean JSON instead
