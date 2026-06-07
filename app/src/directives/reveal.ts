@@ -46,11 +46,12 @@ function build(el: RevealEl, binding: DirectiveBinding<RevealValue>) {
     duration: 0.62,
     delay: delayMs / 1000,
     ease: NOVA.ease,
-    clearProps: 'transform,opacity',
     scrollTrigger: {
       trigger: el,
       start: 'top 88%',
-      once: true,
+      // Replay every time the element scrolls back into view (not just once),
+      // so the motion is a permanent part of the page rather than a one-shot.
+      toggleActions: 'play none none reverse',
     },
   })
 }
