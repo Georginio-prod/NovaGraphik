@@ -40,3 +40,11 @@ export function withRatio(url: string, code: string): string {
 export function ratioCss(code: string): string {
   return VIDEO_FORMATS.find((f) => f.code === code)?.css || '16 / 9'
 }
+
+// A <video> with preload="metadata" shows a black box until played. Appending a
+// `#t=` media fragment makes the browser render that frame as a poster. Used at
+// render time only (never re-parsed for the format), so it keeps `?ar=` intact.
+export function posterSrc(url: string): string {
+  if (!url || url.includes('#')) return url
+  return `${url}#t=0.1`
+}

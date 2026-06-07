@@ -3,17 +3,19 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { api, type PortfolioItem } from '@/lib/api'
 import { novaGrad } from '@/lib/gradients'
-import { isVideoUrl, getMediaMeta, ratioCss } from '@/lib/media'
+import { isVideoUrl, getMediaMeta, ratioCss, posterSrc } from '@/lib/media'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
+import MediaLightbox from '@/components/base/MediaLightbox.vue'
 
 const route = useRoute()
 const item = ref<PortfolioItem | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
+const lightboxSrc = ref<string | null>(null)
 
 async function load(slug: string) {
   loading.value = true
@@ -63,21 +65,33 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
 
         <div v-if="item.images && item.images.length" class="grid grid-cols-2 tab:grid-cols-3 gap-[18px] mt-10">
           <template v-for="(media, i) in item.images" :key="i">
+            <!-- Video: shown in its chosen format, with an enlarge button -->
             <div
               v-if="isVideoUrl(media)"
               v-reveal="(i % 3) * 60"
-              class="w-full self-start overflow-hidden rounded-lg border border-line bg-black"
+              class="group relative w-full self-start overflow-hidden rounded-lg border border-line bg-black"
               :style="{ aspectRatio: ratioCss(getMediaMeta(media).ratio), maxHeight: '600px' }"
             >
-              <video :src="media" controls playsinline preload="metadata" class="w-full h-full object-contain" />
+              <video :src="posterSrc(media)" controls playsinline preload="metadata" class="w-full h-full object-contain" />
+              <button
+                type="button"
+                class="absolute right-2.5 top-2.5 grid h-9 w-9 place-items-center rounded-full bg-black/55 text-white opacity-0 transition-opacity duration-nova hover:bg-black/75 group-hover:opacity-100"
+                title="Agrandir"
+                @click="lightboxSrc = media"
+              >
+                <NIcon name="eye" :size="17" />
+              </button>
             </div>
-            <img
+            <!-- Image: click to enlarge -->
+            <button
               v-else
-              :src="media"
-              alt=""
+              type="button"
               v-reveal="(i % 3) * 60"
-              class="w-full h-[240px] self-start object-cover rounded-lg border border-line"
-            />
+              class="group relative block h-[240px] w-full cursor-zoom-in self-start overflow-hidden rounded-lg border border-line p-0"
+              @click="lightboxSrc = media"
+            >
+              <img :src="media" alt="" class="h-full w-full object-cover transition-transform duration-nova ease-nova group-hover:scale-105" />
+            </button>
           </template>
         </div>
 
@@ -98,5 +112,7 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
     </section>
 
     <CtaBand />
+
+    <MediaLightbox v-if="lightboxSrc" :src="lightboxSrc" @close="lightboxSrc = null" />
   </div>
 </template>
