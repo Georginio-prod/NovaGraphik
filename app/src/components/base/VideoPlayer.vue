@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { posterSrc } from '@/lib/media'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import NIcon from './NIcon.vue'
 
-// Compatibility-first video player: explicit <source type>, inline playback,
-// poster frame, and a graceful fallback (open externally) when the browser
-// can't decode the codec — so a clip plays wherever it can, and degrades nicely
-// where it can't (e.g. HEVC/.mov in Chrome).
+// Compatibility-first video player:
+//  - explicit <source type> + inline playback for broad browser support
+//  - a real thumbnail captured client-side (canvas) so the player isn't a black
+//    box before playing
+//  - graceful fallback (open externally) when the codec can't be decoded.
 const props = withDefaults(
-  defineProps<{
-    src: string
-    autoplay?: boolean
-    poster?: boolean
-    videoClass?: string
-  }>(),
-  { autoplay: false, poster: true, videoClass: 'h-full w-full object-contain' },
+  defineProps<{ src: string; autoplay?: boolean; videoClass?: string }>(),
+  { autoplay: false, videoClass: 'h-full w-full object-contain' },
 )
 
 const failed = ref(false)
+const posterUrl = ref('')
 
 // Clean file path (no query/fragment) for type detection + the external link.
 const path = computed(() => props.src.split('#')[0].split('?')[0])
@@ -27,23 +23,72 @@ const mime = computed(() => {
   if (ext === 'ogg') return 'video/ogg'
   return 'video/mp4' // mp4 / mov / m4v → mp4 for the widest acceptance
 })
-// Poster frame only when not autoplaying (a poster is pointless mid-autoplay).
-const videoSrc = computed(() => (props.poster && !props.autoplay ? posterSrc(props.src) : props.src))
+
+// Grab a frame for the poster (same-origin uploads → canvas isn't tainted).
+let temp: HTMLVideoElement | null = null
+let timer: ReturnType<typeof setTimeout> | undefined
+function cleanupTemp() {
+  if (timer) clearTimeout(timer)
+  timer = undefined
+  if (temp) {
+    temp.removeAttribute('src')
+    try { temp.load() } catch { /* noop */ }
+    temp = null
+  }
+}
+onMounted(() => {
+  if (props.autoplay) return // lightbox autoplays — no thumbnail needed
+  const v = document.createElement('video')
+  temp = v
+  v.muted = true
+  v.preload = 'auto'
+  v.playsInline = true
+  v.src = path.value
+  v.addEventListener('loadeddata', () => {
+    try {
+      v.currentTime = Math.min(0.4, (v.duration || 1) / 2)
+    } catch {
+      cleanupTemp()
+    }
+  })
+  v.addEventListener(
+    'seeked',
+    () => {
+      try {
+        if (v.videoWidth) {
+          const c = document.createElement('canvas')
+          c.width = v.videoWidth
+          c.height = v.videoHeight
+          c.getContext('2d')?.drawImage(v, 0, 0)
+          posterUrl.value = c.toDataURL('image/jpeg', 0.72)
+        }
+      } catch {
+        /* decode/taint issue → leave without poster */
+      }
+      cleanupTemp()
+    },
+    { once: true },
+  )
+  v.addEventListener('error', cleanupTemp, { once: true })
+  timer = setTimeout(cleanupTemp, 6000) // bound work for slow/odd files
+})
+onBeforeUnmount(cleanupTemp)
 </script>
 
 <template>
   <div class="relative">
     <video
       v-if="!failed"
-      :key="videoSrc"
+      :key="src"
       controls
       playsinline
       preload="metadata"
       :autoplay="autoplay"
+      :poster="posterUrl || undefined"
       :class="videoClass"
       @error="failed = true"
     >
-      <source :src="videoSrc" :type="mime" />
+      <source :src="src" :type="mime" />
     </video>
 
     <div v-else class="absolute inset-0 grid place-items-center bg-black/85 p-4 text-center">

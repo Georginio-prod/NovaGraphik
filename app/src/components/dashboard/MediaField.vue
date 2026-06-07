@@ -124,7 +124,7 @@ async function onCropConfirm(blob: Blob) {
         class="text-[12px] font-semibold text-nova-teal inline-flex items-center gap-1.5 hover:underline"
         @click="lightbox = true"
       >
-        <NIcon name="eye" :size="14" /> Agrandir
+        <NIcon name="arrow-up-right" :size="14" /> Agrandir
       </button>
       <button v-if="model" type="button" class="text-[12px] text-fg-3 hover:text-err" @click="model = ''">Retirer</button>
     </div>

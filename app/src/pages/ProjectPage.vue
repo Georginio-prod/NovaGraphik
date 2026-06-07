@@ -76,11 +76,10 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
               <VideoPlayer :src="media" class="h-full w-full" />
               <button
                 type="button"
-                class="absolute right-2.5 top-2.5 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/55 text-white opacity-0 transition-opacity duration-nova hover:bg-black/75 group-hover:opacity-100"
-                title="Agrandir"
+                class="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-[rgba(2,44,61,0.85)] px-3 py-1.5 font-glyphic text-[10px] uppercase tracking-[0.18em] text-white opacity-0 transition-opacity duration-nova group-hover:opacity-100"
                 @click="lightboxSrc = media"
               >
-                <NIcon name="eye" :size="17" />
+                Agrandir <NIcon name="arrow-up-right" :size="13" color="#0cf25d" />
               </button>
             </div>
             <!-- Image: click to enlarge -->
@@ -88,10 +87,15 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
               v-else
               type="button"
               v-reveal="(i % 3) * 60"
-              class="group relative block h-[240px] w-full cursor-zoom-in self-start overflow-hidden rounded-lg border border-line p-0"
+              class="group relative block h-[240px] w-full cursor-pointer self-start overflow-hidden rounded-lg border border-line p-0"
               @click="lightboxSrc = media"
             >
               <img :src="media" alt="" class="h-full w-full object-cover transition-transform duration-nova ease-nova group-hover:scale-105" />
+              <span class="absolute inset-0 grid place-items-center bg-[rgba(2,44,61,0.55)] opacity-0 transition-opacity duration-nova group-hover:opacity-100">
+                <span class="inline-flex items-center gap-2 font-glyphic text-xs uppercase tracking-[0.18em] text-white">
+                  Agrandir <NIcon name="arrow-up-right" :size="16" color="#0cf25d" />
+                </span>
+              </span>
             </button>
           </template>
         </div>
