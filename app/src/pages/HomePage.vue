@@ -196,9 +196,10 @@ const heroParts = computed(() => {
               :class="!isMobile && i === 0 && 'row-span-2'"
               :style="{ height: isMobile ? (i === 0 ? '240px' : '180px') : '100%', background: novaGrad(i + 1) }"
             >
-              <!-- Cells with a real cover photo show it; others stay placeholders.
-                   On a broken image we hide the <img> so the gradient behind shows. -->
-              <template v-if="i < 3 && cell.cover">
+              <!-- Show the category cover when available; the branded gradient
+                   stays as the fallback. On a broken image we hide the <img>
+                   so the gradient behind shows. -->
+              <template v-if="cell.cover">
                 <img
                   :src="cell.cover"
                   :alt="cell.category"
