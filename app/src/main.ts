@@ -39,6 +39,7 @@ const router = createRouter({
         { path: 'partenaires', name: 'dash-partenaires', component: () => import('./pages/dashboard/DashboardPartners.vue') },
         { path: 'tarifs', name: 'dash-tarifs', component: () => import('./pages/dashboard/DashboardPricing.vue') },
         { path: 'navigation', name: 'dash-navigation', component: () => import('./pages/dashboard/DashboardNavigation.vue') },
+        { path: 'footer', name: 'dash-footer', component: () => import('./pages/dashboard/DashboardFooter.vue') },
         { path: 'settings', name: 'dash-settings', component: () => import('./pages/dashboard/DashboardSettings.vue') },
       ],
     },

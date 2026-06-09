@@ -18,6 +18,7 @@ const NAV: [string, string, string][] = [
   ['award', 'Partenaires', '/admin/partenaires'],
   ['tag', 'Tarifs', '/admin/tarifs'],
   ['menu', 'Navigation', '/admin/navigation'],
+  ['layers', 'Pied de page', '/admin/footer'],
   ['settings', 'Réglages', '/admin/settings'],
 ]
 

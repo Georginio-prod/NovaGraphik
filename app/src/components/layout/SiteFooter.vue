@@ -51,6 +51,15 @@ const socials = computed<[string, string, string][]>(() =>
 )
 const tagline = computed(() => get('tagline', "L'essence du raffinement").toUpperCase())
 const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
+// Footer texts — editable from the dashboard "Pied de page" section.
+const description = computed(() =>
+  get('footer_description', 'Agence de communication visuelle — identité, print, digital & motion design.'),
+)
+const newsletterTitle = computed(() => get('footer_newsletter_title', "S'abonner"))
+const newsletterText = computed(() => get('footer_newsletter_text', 'Recevez nos derniers projets.'))
+const copyright = computed(
+  () => get('footer_copyright') || `© 2026 ${siteTitle.value}. Tous droits réservés.`,
+)
 </script>
 
 <template>
@@ -68,7 +77,7 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
         <div class="min-[560px]:col-span-2 desk:col-span-1">
           <LogoNova variant="white" interactive class="w-[150px] mb-[18px] block" />
           <p class="text-[13.5px] leading-relaxed text-fg-on-dark-2 max-w-[280px] m-0">
-            Agence de communication visuelle — identité, print, digital & motion design.
+            {{ description }}
           </p>
         </div>
         <div>
@@ -96,8 +105,8 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
           </a>
         </div>
         <div>
-          <div class="font-glyphic text-[11px] font-semibold tracking-[0.18em] uppercase text-nova-lime mb-4">S'abonner</div>
-          <p class="text-[13px] text-fg-on-dark-2 m-0 mb-3">Recevez nos derniers projets.</p>
+          <div class="font-glyphic text-[11px] font-semibold tracking-[0.18em] uppercase text-nova-lime mb-4">{{ newsletterTitle }}</div>
+          <p class="text-[13px] text-fg-on-dark-2 m-0 mb-3">{{ newsletterText }}</p>
           <template v-if="subState === 'done'">
             <p class="text-[13px] text-nova-lime-soft m-0 flex items-center gap-2">
               <NIcon name="check" :size="15" color="#0cf25d" /> Merci, vous êtes inscrit !
@@ -127,7 +136,7 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
         :class="isMobile ? 'mt-9' : 'mt-14'"
       >
         <span class="font-glyphic text-[11px] tracking-[0.22em] text-fg-on-dark-3">{{ tagline }}</span>
-        <span class="text-xs text-fg-on-dark-3">© 2026 {{ siteTitle }}. Tous droits réservés.</span>
+        <span class="text-xs text-fg-on-dark-3">{{ copyright }}</span>
       </div>
     </div>
   </footer>
