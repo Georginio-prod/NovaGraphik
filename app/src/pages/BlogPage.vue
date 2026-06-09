@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useViewport } from '@/composables/useViewport'
 import { useArticles } from '@/composables/useEditable'
 import type { Article } from '@/lib/api'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
-import NButton from '@/components/base/NButton.vue'
+import NIcon from '@/components/base/NIcon.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
@@ -27,7 +28,7 @@ const all = computed<Article[]>(() => (loaded.value && liveArticles.value.length
 // First → featured. Next 2 → "big" cards. Rest → small cards (up to 4).
 const featured = computed<Article | undefined>(() => all.value[0])
 const ARTICLES = computed<Article[]>(() => all.value.slice(0, 3))
-const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3, 7))
+const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3))
 </script>
 
 <template>
@@ -39,49 +40,52 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3, 7))
     />
     <section class="py-10 tab:py-14 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
-        <article
+        <RouterLink
           v-if="featured"
-          class="grid bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12 grid-cols-1 gap-0 tab:grid-cols-[1.2fr_1fr] tab:gap-8"
+          :to="`/blogs/${featured.slug}`"
+          class="group grid bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12 grid-cols-1 gap-0 tab:grid-cols-[1.2fr_1fr] tab:gap-8 no-underline transition-shadow duration-nova hover:shadow-nova-md"
         >
           <NPlaceholder :idx="0" :height="isMobile ? 200 : 320" radius="rounded-none" :src="featured.cover_image || undefined" label="À la une" />
           <div class="self-center" :class="isMobile ? 'p-6' : 'py-10 pr-10 pl-2'">
             <NEyebrow>{{ featured.category }} · {{ featured.date }}</NEyebrow>
-            <h2 class="font-display text-[34px] font-semibold leading-tight tracking-tight my-3.5 text-fg-1">
+            <h2 class="font-display text-[34px] font-semibold leading-tight tracking-tight my-3.5 text-fg-1 transition-colors duration-nova group-hover:text-nova-teal">
               {{ featured.title }}
             </h2>
             <p class="text-[15px] leading-relaxed text-fg-2 m-0 mb-[22px]">{{ featured.excerpt }}</p>
-            <NButton variant="ghost" icon="arrow-right">Lire l'article</NButton>
+            <span class="inline-flex items-center gap-2 text-nova-teal font-semibold text-[14px]">Lire l'article <NIcon name="arrow-right" :size="16" /></span>
           </div>
-        </article>
+        </RouterLink>
 
         <div
           v-if="ARTICLES.length > 1"
           class="grid gap-[22px] mb-[22px] grid-cols-1 tab:grid-cols-2"
         >
-          <article
+          <RouterLink
             v-for="(a, i) in ARTICLES.slice(1)"
             :key="a.id"
+            :to="`/blogs/${a.slug}`"
             v-reveal="i * 80"
-            class="bg-nova-surface border border-line rounded-lg overflow-hidden cursor-pointer shadow-nova-xs transition-all duration-nova ease-nova hover:shadow-nova-md hover:-translate-y-[3px]"
+            class="group block no-underline bg-nova-surface border border-line rounded-lg overflow-hidden shadow-nova-xs transition-all duration-nova ease-nova hover:shadow-nova-md hover:-translate-y-[3px]"
           >
             <NPlaceholder :idx="i + 3" :height="180" radius="rounded-none" :src="a.cover_image || undefined" />
             <div class="p-5 px-[22px]">
               <NEyebrow class="text-[10px]">{{ a.category }} · {{ a.date }}</NEyebrow>
-              <h3 class="font-display text-[23px] font-semibold my-2 leading-tight text-fg-1">{{ a.title }}</h3>
+              <h3 class="font-display text-[23px] font-semibold my-2 leading-tight text-fg-1 transition-colors duration-nova group-hover:text-nova-teal">{{ a.title }}</h3>
               <p class="text-[13.5px] leading-snug text-fg-3 m-0">{{ a.excerpt }}</p>
             </div>
-          </article>
+          </RouterLink>
         </div>
 
         <div
           v-if="ARTICLES_SM.length"
           class="grid gap-[22px] grid-cols-2 tab:grid-cols-3 desk:grid-cols-4"
         >
-          <article
+          <RouterLink
             v-for="(a, i) in ARTICLES_SM"
             :key="a.id"
+            :to="`/blogs/${a.slug}`"
             v-reveal="i * 70"
-            class="group cursor-pointer transition-transform duration-nova hover:-translate-y-0.5"
+            class="group block no-underline transition-transform duration-nova hover:-translate-y-0.5"
           >
             <NPlaceholder :idx="i + 1" :height="120" :src="a.cover_image || undefined" />
             <div class="pt-3">
@@ -90,7 +94,7 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3, 7))
                 {{ a.title }}
               </h4>
             </div>
-          </article>
+          </RouterLink>
         </div>
       </NContainer>
     </section>

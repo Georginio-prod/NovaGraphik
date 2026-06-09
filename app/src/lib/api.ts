@@ -38,7 +38,7 @@ const RES: Record<string, Res> = {
   portfolio: { table: 'portfolio_items', list: 'items', item: 'item', slugFrom: 'title' },
   nav: { table: 'nav_items', list: 'items', item: 'item' },
   services: { table: 'services', list: 'items', item: 'item' },
-  articles: { table: 'articles', list: 'items', item: 'item' },
+  articles: { table: 'articles', list: 'items', item: 'item', slugFrom: 'title' },
   partners: { table: 'partners', list: 'items', item: 'item' },
   testimonials: { table: 'testimonials', list: 'items', item: 'item' },
   'pricing-items': { table: 'pricing_items', list: 'items', item: 'item' },

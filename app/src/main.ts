@@ -18,6 +18,7 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('./pages/HomePage.vue') },
     { path: '/portfolios', name: 'portfolios', component: () => import('./pages/PortfolioPage.vue') },
     { path: '/blogs', name: 'blogs', component: () => import('./pages/BlogPage.vue') },
+    { path: '/blogs/:slug', name: 'article', component: () => import('./pages/BlogArticlePage.vue') },
     { path: '/contact', name: 'contact', component: () => import('./pages/ContactPage.vue') },
     { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue') },
     { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue') },
