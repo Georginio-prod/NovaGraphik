@@ -7,6 +7,7 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
 import NPill from '@/components/base/NPill.vue'
 import NField from '@/components/base/NField.vue'
+import PhoneInput from '@/components/base/PhoneInput.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import NSectionHeader from '@/components/base/NSectionHeader.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
@@ -223,7 +224,7 @@ function reset() {
               <div class="grid gap-4 grid-cols-1 tab:grid-cols-2">
                 <NField v-model="name" label="Nom complet" placeholder="Votre nom" :error="errors.name" />
                 <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
-                <NField v-model="phone" type="tel" label="Téléphone" placeholder="+228 90 00 00 00" :error="errors.phone" />
+                <PhoneInput v-model="phone" label="Téléphone" :error="errors.phone" />
               </div>
               <div class="mt-4">
                 <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service <span class="font-normal text-fg-3 normal-case tracking-normal">(choix multiple)</span></label>
