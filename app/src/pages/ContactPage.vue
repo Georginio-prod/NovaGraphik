@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSettings } from '@/composables/useSettings'
+import { supabase } from '@/lib/supabase'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
@@ -30,15 +31,91 @@ const socials = computed<[string, string][]>(() =>
   ).filter((s) => s[1]),
 )
 
-// Devis requests are emailed to the agency via FormSubmit (no backend needed).
-// The first submission triggers a one-time confirmation email to this address;
-// once the owner clicks the link, every request lands in the inbox.
+// Devis requests are emailed to contact@novagraphik.fr.
+// Preferred path = EmailJS (branded HTML email with the Nova logo); if its keys
+// aren't configured yet we fall back to FormSubmit (plain structured email) so
+// the form always works. Any attached file is uploaded to Supabase Storage and
+// the email carries its download link.
 const DEVIS_INBOX = 'contact@novagraphik.fr'
+const EMAILJS = {
+  service: import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined,
+  template: import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined,
+  publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined,
+}
+const emailjsReady = !!(EMAILJS.service && EMAILJS.template && EMAILJS.publicKey)
 
 const sel = ref<string[]>(['Identité visuelle'])
 const sent = ref(false)
 const sending = ref(false)
 const sendError = ref('')
+const file = ref<File | null>(null)
+const fileError = ref('')
+let resetTimer: ReturnType<typeof setTimeout>
+
+function onFile(e: Event) {
+  fileError.value = ''
+  const f = (e.target as HTMLInputElement).files?.[0] ?? null
+  if (f && f.size > 10 * 1024 * 1024) {
+    fileError.value = 'Fichier trop volumineux (max 10 Mo).'
+    file.value = null
+    ;(e.target as HTMLInputElement).value = ''
+    return
+  }
+  file.value = f
+}
+
+async function uploadFile(): Promise<{ url: string; name: string }> {
+  const f = file.value
+  if (!f) return { url: '', name: '' }
+  const ext = f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : ''
+  const path = `devis/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
+  const { error } = await supabase.storage
+    .from('quote-files')
+    .upload(path, f, { contentType: f.type || undefined })
+  if (error) throw error
+  return { url: supabase.storage.from('quote-files').getPublicUrl(path).data.publicUrl, name: f.name }
+}
+
+async function sendViaEmailJS(fileUrl: string, fileName: string) {
+  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      service_id: EMAILJS.service,
+      template_id: EMAILJS.template,
+      user_id: EMAILJS.publicKey,
+      template_params: {
+        name: name.value.trim(),
+        email: email.value.trim(),
+        services: sel.value.join(', ') || '—',
+        message: message.value.trim(),
+        file_url: fileUrl,
+        file_name: fileName,
+        to_email: DEVIS_INBOX,
+      },
+    }),
+  })
+  if (!res.ok) throw new Error(`EmailJS ${res.status}`)
+}
+
+async function sendViaFormSubmit(fileUrl: string) {
+  const body: Record<string, string> = {
+    Nom: name.value.trim(),
+    Email: email.value.trim(),
+    'Type de service': sel.value.join(', ') || '—',
+    Message: message.value.trim(),
+    _subject: `Nouvelle demande de devis — ${name.value.trim()}`,
+    _template: 'table',
+    _replyto: email.value.trim(),
+  }
+  if (fileUrl) body['Fichier joint'] = fileUrl
+  const res = await fetch(`https://formsubmit.co/ajax/${DEVIS_INBOX}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`FormSubmit ${res.status}`)
+}
 function toggleService(s: string) {
   const i = sel.value.indexOf(s)
   if (i >= 0) sel.value.splice(i, 1)
@@ -67,21 +144,13 @@ async function submit() {
   sending.value = true
   sendError.value = ''
   try {
-    const res = await fetch(`https://formsubmit.co/ajax/${DEVIS_INBOX}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        Nom: name.value.trim(),
-        Email: email.value.trim(),
-        'Type de service': sel.value.join(', ') || '—',
-        Message: message.value.trim(),
-        _subject: `Nouvelle demande de devis — ${name.value.trim()}`,
-        _template: 'table',
-        _replyto: email.value.trim(),
-      }),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const { url, name: fname } = await uploadFile()
+    if (emailjsReady) await sendViaEmailJS(url, fname)
+    else await sendViaFormSubmit(url)
     sent.value = true
+    // Re-show a fresh form automatically after a few seconds.
+    clearTimeout(resetTimer)
+    resetTimer = setTimeout(reset, 5000)
   } catch {
     sendError.value = `L'envoi a échoué. Réessayez, ou écrivez-nous directement à ${DEVIS_INBOX}.`
   } finally {
@@ -89,6 +158,7 @@ async function submit() {
   }
 }
 function reset() {
+  clearTimeout(resetTimer)
   sent.value = false
   sending.value = false
   sendError.value = ''
@@ -96,6 +166,8 @@ function reset() {
   email.value = ''
   message.value = ''
   sel.value = ['Identité visuelle']
+  file.value = null
+  fileError.value = ''
   errors.value = {}
 }
 </script>
@@ -177,6 +249,16 @@ function reset() {
                   "
                 />
                 <p v-if="errors.message" class="text-err text-[12px] mt-1.5 mb-0">{{ errors.message }}</p>
+              </div>
+              <div class="mt-4">
+                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Pièce jointe <span class="font-normal text-fg-3 normal-case tracking-normal">(optionnel — brief, logo, doc… max 10 Mo)</span></label>
+                <label class="mt-2 flex items-center gap-3 cursor-pointer border border-dashed border-line-strong rounded-sm px-3.5 py-3 text-[13px] text-fg-2 hover:border-nova-teal transition-colors duration-nova">
+                  <NIcon name="plus" :size="16" color="#02735e" />
+                  <span v-if="file" class="text-fg-1 font-medium truncate">{{ file.name }}</span>
+                  <span v-else>Choisir un fichier…</span>
+                  <input type="file" class="hidden" @change="onFile" />
+                </label>
+                <p v-if="fileError" class="text-err text-[12px] mt-1.5 mb-0">{{ fileError }}</p>
               </div>
               <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-[22px]" :disabled="sending" @click="submit">
                 {{ sending ? 'Envoi…' : 'Envoyer ma demande' }}
