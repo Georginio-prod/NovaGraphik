@@ -73,8 +73,12 @@ watch(model, (v) => {
   }
 })
 
-const fieldClass =
-  'w-full box-border font-sans text-sm text-fg-1 bg-nova-paper border rounded-sm px-3.5 py-3 outline-none transition-[border-color,box-shadow,background] duration-nova focus:bg-nova-surface'
+// NB: no `w-full` here — width is set per element (the select is fixed-width,
+// the input flexes to fill the rest). A shared w-full would override w-[...].
+const fieldBase =
+  'box-border font-sans text-sm text-fg-1 bg-nova-paper border rounded-sm py-3 outline-none transition-[border-color,box-shadow,background] duration-nova focus:bg-nova-surface'
+const okBorder = 'border-line-strong focus:border-nova-lime focus:shadow-[0_0_0_3px_rgba(12,242,93,0.18)]'
+const errBorder = 'border-err focus:border-err focus:shadow-[0_0_0_3px_rgba(192,57,43,0.15)]'
 </script>
 
 <template>
@@ -84,9 +88,9 @@ const fieldClass =
       <select
         v-model="dial"
         aria-label="Indicatif pays"
-        :class="[fieldClass, 'w-[112px] shrink-0 cursor-pointer', error ? 'border-err' : 'border-line-strong focus:border-nova-lime']"
+        :class="[fieldBase, 'w-[150px] shrink-0 cursor-pointer pl-3 pr-2', error ? errBorder : okBorder]"
       >
-        <option v-for="(c, i) in COUNTRIES" :key="i" :value="c.d">{{ c.f }} {{ c.d }}</option>
+        <option v-for="(c, i) in COUNTRIES" :key="i" :value="c.d">{{ c.f }} {{ c.n }} ({{ c.d }})</option>
       </select>
       <input
         v-model="local"
@@ -94,13 +98,7 @@ const fieldClass =
         inputmode="tel"
         :placeholder="placeholder || '90 12 34 56'"
         :aria-invalid="error ? true : undefined"
-        :class="[
-          fieldClass,
-          'flex-1 min-w-0',
-          error
-            ? 'border-err focus:border-err focus:shadow-[0_0_0_3px_rgba(192,57,43,0.15)]'
-            : 'border-line-strong focus:border-nova-lime focus:shadow-[0_0_0_3px_rgba(12,242,93,0.18)]',
-        ]"
+        :class="[fieldBase, 'flex-1 min-w-0 px-3.5', error ? errBorder : okBorder]"
       />
     </div>
     <p v-if="error" class="text-err text-[12px] mt-1.5 mb-0">{{ error }}</p>

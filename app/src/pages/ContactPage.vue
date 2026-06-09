@@ -224,7 +224,7 @@ function reset() {
               <div class="grid gap-4 grid-cols-1 tab:grid-cols-2">
                 <NField v-model="name" label="Nom complet" placeholder="Votre nom" :error="errors.name" />
                 <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
-                <PhoneInput v-model="phone" label="Téléphone" :error="errors.phone" />
+                <PhoneInput v-model="phone" label="Téléphone" :error="errors.phone" class="tab:col-span-2" />
               </div>
               <div class="mt-4">
                 <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service <span class="font-normal text-fg-3 normal-case tracking-normal">(choix multiple)</span></label>
