@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useViewport } from '@/composables/useViewport'
 import { useSettings } from '@/composables/useSettings'
+import { supabase } from '@/lib/supabase'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import LogoNova from '@/components/base/LogoNova.vue'
@@ -9,6 +10,29 @@ import LogoNova from '@/components/base/LogoNova.vue'
 const { isMobile } = useViewport()
 const { get, load } = useSettings()
 onMounted(load)
+
+// Newsletter signup — stores the email in Supabase (`subscribers`); the agency
+// exports the list to send their latest projects. Anonymous insert is allowed
+// by RLS; reading the list requires the admin login.
+const subEmail = ref('')
+const subState = ref<'idle' | 'sending' | 'done' | 'error'>('idle')
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+async function subscribe() {
+  const email = subEmail.value.trim()
+  if (!EMAIL_RE.test(email)) {
+    subState.value = 'error'
+    return
+  }
+  subState.value = 'sending'
+  const { error } = await supabase.from('subscribers').insert({ email })
+  // A duplicate email (unique index) still means "you're subscribed".
+  if (error && !/duplicate|unique/i.test(error.message)) {
+    subState.value = 'error'
+    return
+  }
+  subState.value = 'done'
+  subEmail.value = ''
+}
 
 const contacts = computed<[string, string][]>(() => [
   ['mail', get('contact_email', 'Novagraphiksat@gmail.com')],
@@ -74,13 +98,28 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
         <div>
           <div class="font-glyphic text-[11px] font-semibold tracking-[0.18em] uppercase text-nova-lime mb-4">S'abonner</div>
           <p class="text-[13px] text-fg-on-dark-2 m-0 mb-3">Recevez nos derniers projets.</p>
-          <div class="flex gap-2">
-            <input
-              placeholder="E-mail"
-              class="flex-1 bg-white/6 border border-white/20 rounded-sm py-2.5 px-3 text-white text-[13px] font-sans outline-none placeholder:text-fg-on-dark-3"
-            />
-            <NButton variant="accent" size="sm">OK</NButton>
-          </div>
+          <template v-if="subState === 'done'">
+            <p class="text-[13px] text-nova-lime-soft m-0 flex items-center gap-2">
+              <NIcon name="check" :size="15" color="#0cf25d" /> Merci, vous êtes inscrit !
+            </p>
+          </template>
+          <template v-else>
+            <form class="flex gap-2" @submit.prevent="subscribe">
+              <input
+                v-model="subEmail"
+                type="email"
+                placeholder="E-mail"
+                aria-label="Votre e-mail"
+                class="flex-1 min-w-0 bg-white/6 border rounded-sm py-2.5 px-3 text-white text-[13px] font-sans outline-none placeholder:text-fg-on-dark-3 focus:border-nova-lime"
+                :class="subState === 'error' ? 'border-err' : 'border-white/20'"
+                @input="subState = 'idle'"
+              />
+              <NButton variant="accent" size="sm" :disabled="subState === 'sending'">
+                {{ subState === 'sending' ? '…' : 'OK' }}
+              </NButton>
+            </form>
+            <p v-if="subState === 'error'" class="text-[12px] text-err mt-2 mb-0">Adresse e-mail invalide.</p>
+          </template>
         </div>
       </div>
       <div

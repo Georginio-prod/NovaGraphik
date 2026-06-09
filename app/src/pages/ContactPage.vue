@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSettings } from '@/composables/useSettings'
+import { supabase } from '@/lib/supabase'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
@@ -30,8 +31,80 @@ const socials = computed<[string, string][]>(() =>
   ).filter((s) => s[1]),
 )
 
+// Devis requests are emailed to contact@novagraphik.fr by the `send-quote`
+// Supabase Edge Function, which builds a branded HTML email (Nova logo + a
+// "Télécharger la pièce jointe" button) and sends it through Resend. The Resend
+// key stays server-side. Any attached file is first uploaded to Supabase Storage
+// and its download link is included in the email. If the function is ever
+// unreachable, we fall back to FormSubmit so a request is never lost.
+const DEVIS_INBOX = 'contact@novagraphik.fr'
+
 const sel = ref<string[]>(['Identité visuelle'])
 const sent = ref(false)
+const sending = ref(false)
+const sendError = ref('')
+const file = ref<File | null>(null)
+const fileError = ref('')
+let resetTimer: ReturnType<typeof setTimeout>
+
+function onFile(e: Event) {
+  fileError.value = ''
+  const f = (e.target as HTMLInputElement).files?.[0] ?? null
+  if (f && f.size > 10 * 1024 * 1024) {
+    fileError.value = 'Fichier trop volumineux (max 10 Mo).'
+    file.value = null
+    ;(e.target as HTMLInputElement).value = ''
+    return
+  }
+  file.value = f
+}
+
+async function uploadFile(): Promise<{ url: string; name: string }> {
+  const f = file.value
+  if (!f) return { url: '', name: '' }
+  const ext = f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : ''
+  const path = `devis/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
+  const { error } = await supabase.storage
+    .from('quote-files')
+    .upload(path, f, { contentType: f.type || undefined })
+  if (error) throw error
+  return { url: supabase.storage.from('quote-files').getPublicUrl(path).data.publicUrl, name: f.name }
+}
+
+async function sendViaFunction(fileUrl: string, fileName: string) {
+  const { data, error } = await supabase.functions.invoke('send-quote', {
+    body: {
+      name: name.value.trim(),
+      email: email.value.trim(),
+      phone: phone.value.trim(),
+      services: sel.value.join(', ') || '—',
+      message: message.value.trim(),
+      file_url: fileUrl,
+      file_name: fileName,
+    },
+  })
+  if (error || !(data as { ok?: boolean } | null)?.ok) throw error ?? new Error('send-quote failed')
+}
+
+async function sendViaFormSubmit(fileUrl: string) {
+  const body: Record<string, string> = {
+    Nom: name.value.trim(),
+    Email: email.value.trim(),
+    'Téléphone': phone.value.trim(),
+    'Type de service': sel.value.join(', ') || '—',
+    Message: message.value.trim(),
+    _subject: `Nouvelle demande de devis — ${name.value.trim()}`,
+    _template: 'table',
+    _replyto: email.value.trim(),
+  }
+  if (fileUrl) body['Fichier joint'] = fileUrl
+  const res = await fetch(`https://formsubmit.co/ajax/${DEVIS_INBOX}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`FormSubmit ${res.status}`)
+}
 function toggleService(s: string) {
   const i = sel.value.indexOf(s)
   if (i >= 0) sel.value.splice(i, 1)
@@ -39,32 +112,58 @@ function toggleService(s: string) {
 }
 const name = ref('')
 const email = ref('')
+const phone = ref('')
 const message = ref('')
-const errors = ref<{ name?: string; email?: string; message?: string }>({})
+const errors = ref<{ name?: string; email?: string; phone?: string; message?: string }>({})
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function validate() {
-  const next: { name?: string; email?: string; message?: string } = {}
+  const next: { name?: string; email?: string; phone?: string; message?: string } = {}
   if (!name.value.trim()) next.name = 'Indiquez votre nom.'
   const mail = email.value.trim()
   if (!mail) next.email = 'Indiquez votre e-mail.'
   else if (!EMAIL_RE.test(mail)) next.email = 'Adresse e-mail invalide.'
+  if (!phone.value.trim()) next.phone = 'Indiquez votre numéro de téléphone.'
   if (!message.value.trim()) next.message = 'Décrivez votre projet.'
   errors.value = next
   return Object.keys(next).length === 0
 }
 
-function submit() {
-  if (!validate()) return
-  sent.value = true
+async function submit() {
+  if (!validate() || sending.value) return
+  sending.value = true
+  sendError.value = ''
+  try {
+    const { url, name: fname } = await uploadFile()
+    try {
+      await sendViaFunction(url, fname)
+    } catch {
+      // Edge function unreachable → don't lose the request.
+      await sendViaFormSubmit(url)
+    }
+    sent.value = true
+    // Re-show a fresh form automatically after a few seconds.
+    clearTimeout(resetTimer)
+    resetTimer = setTimeout(reset, 5000)
+  } catch {
+    sendError.value = `L'envoi a échoué. Réessayez, ou écrivez-nous directement à ${DEVIS_INBOX}.`
+  } finally {
+    sending.value = false
+  }
 }
 function reset() {
+  clearTimeout(resetTimer)
   sent.value = false
+  sending.value = false
+  sendError.value = ''
   name.value = ''
   email.value = ''
+  phone.value = ''
   message.value = ''
   sel.value = ['Identité visuelle']
+  file.value = null
+  fileError.value = ''
   errors.value = {}
 }
 </script>
@@ -124,6 +223,7 @@ function reset() {
               <div class="grid gap-4 grid-cols-1 tab:grid-cols-2">
                 <NField v-model="name" label="Nom complet" placeholder="Votre nom" :error="errors.name" />
                 <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
+                <NField v-model="phone" type="tel" label="Téléphone" placeholder="+228 90 00 00 00" :error="errors.phone" />
               </div>
               <div class="mt-4">
                 <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service <span class="font-normal text-fg-3 normal-case tracking-normal">(choix multiple)</span></label>
@@ -147,9 +247,20 @@ function reset() {
                 />
                 <p v-if="errors.message" class="text-err text-[12px] mt-1.5 mb-0">{{ errors.message }}</p>
               </div>
-              <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-[22px]" @click="submit">
-                Envoyer ma demande
+              <div class="mt-4">
+                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Pièce jointe <span class="font-normal text-fg-3 normal-case tracking-normal">(optionnel — brief, logo, doc… max 10 Mo)</span></label>
+                <label class="mt-2 flex items-center gap-3 cursor-pointer border border-dashed border-line-strong rounded-sm px-3.5 py-3 text-[13px] text-fg-2 hover:border-nova-teal transition-colors duration-nova">
+                  <NIcon name="plus" :size="16" color="#02735e" />
+                  <span v-if="file" class="text-fg-1 font-medium truncate">{{ file.name }}</span>
+                  <span v-else>Choisir un fichier…</span>
+                  <input type="file" class="hidden" @change="onFile" />
+                </label>
+                <p v-if="fileError" class="text-err text-[12px] mt-1.5 mb-0">{{ fileError }}</p>
+              </div>
+              <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-[22px]" :disabled="sending" @click="submit">
+                {{ sending ? 'Envoi…' : 'Envoyer ma demande' }}
               </NButton>
+              <p v-if="sendError" class="text-err text-[13px] mt-3 mb-0">{{ sendError }}</p>
             </template>
           </div>
         </div>
