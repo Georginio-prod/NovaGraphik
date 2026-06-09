@@ -30,8 +30,15 @@ const socials = computed<[string, string][]>(() =>
   ).filter((s) => s[1]),
 )
 
+// Devis requests are emailed to the agency via FormSubmit (no backend needed).
+// The first submission triggers a one-time confirmation email to this address;
+// once the owner clicks the link, every request lands in the inbox.
+const DEVIS_INBOX = 'contact@novagraphik.fr'
+
 const sel = ref<string[]>(['Identité visuelle'])
 const sent = ref(false)
+const sending = ref(false)
+const sendError = ref('')
 function toggleService(s: string) {
   const i = sel.value.indexOf(s)
   if (i >= 0) sel.value.splice(i, 1)
@@ -55,12 +62,36 @@ function validate() {
   return Object.keys(next).length === 0
 }
 
-function submit() {
-  if (!validate()) return
-  sent.value = true
+async function submit() {
+  if (!validate() || sending.value) return
+  sending.value = true
+  sendError.value = ''
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${DEVIS_INBOX}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        Nom: name.value.trim(),
+        Email: email.value.trim(),
+        'Type de service': sel.value.join(', ') || '—',
+        Message: message.value.trim(),
+        _subject: `Nouvelle demande de devis — ${name.value.trim()}`,
+        _template: 'table',
+        _replyto: email.value.trim(),
+      }),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    sent.value = true
+  } catch {
+    sendError.value = `L'envoi a échoué. Réessayez, ou écrivez-nous directement à ${DEVIS_INBOX}.`
+  } finally {
+    sending.value = false
+  }
 }
 function reset() {
   sent.value = false
+  sending.value = false
+  sendError.value = ''
   name.value = ''
   email.value = ''
   message.value = ''
@@ -147,9 +178,10 @@ function reset() {
                 />
                 <p v-if="errors.message" class="text-err text-[12px] mt-1.5 mb-0">{{ errors.message }}</p>
               </div>
-              <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-[22px]" @click="submit">
-                Envoyer ma demande
+              <NButton variant="accent" size="lg" icon="arrow-right" block class="mt-[22px]" :disabled="sending" @click="submit">
+                {{ sending ? 'Envoi…' : 'Envoyer ma demande' }}
               </NButton>
+              <p v-if="sendError" class="text-err text-[13px] mt-3 mb-0">{{ sendError }}</p>
             </template>
           </div>
         </div>
