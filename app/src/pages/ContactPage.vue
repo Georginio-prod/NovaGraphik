@@ -31,18 +31,13 @@ const socials = computed<[string, string][]>(() =>
   ).filter((s) => s[1]),
 )
 
-// Devis requests are emailed to contact@novagraphik.fr.
-// Preferred path = EmailJS (branded HTML email with the Nova logo); if its keys
-// aren't configured yet we fall back to FormSubmit (plain structured email) so
-// the form always works. Any attached file is uploaded to Supabase Storage and
-// the email carries its download link.
+// Devis requests are emailed to contact@novagraphik.fr by the `send-quote`
+// Supabase Edge Function, which builds a branded HTML email (Nova logo + a
+// "Télécharger la pièce jointe" button) and sends it through Resend. The Resend
+// key stays server-side. Any attached file is first uploaded to Supabase Storage
+// and its download link is included in the email. If the function is ever
+// unreachable, we fall back to FormSubmit so a request is never lost.
 const DEVIS_INBOX = 'contact@novagraphik.fr'
-const EMAILJS = {
-  service: import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined,
-  template: import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined,
-  publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined,
-}
-const emailjsReady = !!(EMAILJS.service && EMAILJS.template && EMAILJS.publicKey)
 
 const sel = ref<string[]>(['Identité visuelle'])
 const sent = ref(false)
@@ -76,26 +71,18 @@ async function uploadFile(): Promise<{ url: string; name: string }> {
   return { url: supabase.storage.from('quote-files').getPublicUrl(path).data.publicUrl, name: f.name }
 }
 
-async function sendViaEmailJS(fileUrl: string, fileName: string) {
-  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      service_id: EMAILJS.service,
-      template_id: EMAILJS.template,
-      user_id: EMAILJS.publicKey,
-      template_params: {
-        name: name.value.trim(),
-        email: email.value.trim(),
-        services: sel.value.join(', ') || '—',
-        message: message.value.trim(),
-        file_url: fileUrl,
-        file_name: fileName,
-        to_email: DEVIS_INBOX,
-      },
-    }),
+async function sendViaFunction(fileUrl: string, fileName: string) {
+  const { data, error } = await supabase.functions.invoke('send-quote', {
+    body: {
+      name: name.value.trim(),
+      email: email.value.trim(),
+      services: sel.value.join(', ') || '—',
+      message: message.value.trim(),
+      file_url: fileUrl,
+      file_name: fileName,
+    },
   })
-  if (!res.ok) throw new Error(`EmailJS ${res.status}`)
+  if (error || !(data as { ok?: boolean } | null)?.ok) throw error ?? new Error('send-quote failed')
 }
 
 async function sendViaFormSubmit(fileUrl: string) {
@@ -145,8 +132,12 @@ async function submit() {
   sendError.value = ''
   try {
     const { url, name: fname } = await uploadFile()
-    if (emailjsReady) await sendViaEmailJS(url, fname)
-    else await sendViaFormSubmit(url)
+    try {
+      await sendViaFunction(url, fname)
+    } catch {
+      // Edge function unreachable → don't lose the request.
+      await sendViaFormSubmit(url)
+    }
     sent.value = true
     // Re-show a fresh form automatically after a few seconds.
     clearTimeout(resetTimer)
