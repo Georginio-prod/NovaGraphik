@@ -249,10 +249,10 @@ function reset() {
                 <p v-if="errors.message" class="text-err text-[12px] mt-1.5 mb-0">{{ errors.message }}</p>
               </div>
               <div class="mt-4">
-                <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Pièce jointe <span class="font-normal text-fg-3 normal-case tracking-normal">(optionnel — brief, logo, doc… max 10 Mo)</span></label>
-                <label class="mt-2 flex items-center gap-3 cursor-pointer border border-dashed border-line-strong rounded-sm px-3.5 py-3 text-[13px] text-fg-2 hover:border-nova-teal transition-colors duration-nova">
+                <label class="block text-[11px] font-semibold tracking-wider uppercase text-fg-2">Pièce jointe <span class="font-normal text-fg-3 normal-case tracking-normal">(optionnel — brief, logo, doc… max 10 Mo)</span></label>
+                <label class="mt-2 inline-flex max-w-full items-center gap-2.5 cursor-pointer border border-dashed border-line-strong rounded-sm px-3.5 py-2.5 text-[13px] text-fg-2 hover:border-nova-teal transition-colors duration-nova">
                   <NIcon name="plus" :size="16" color="#02735e" />
-                  <span v-if="file" class="text-fg-1 font-medium truncate">{{ file.name }}</span>
+                  <span v-if="file" class="text-fg-1 font-medium truncate max-w-[240px]">{{ file.name }}</span>
                   <span v-else>Choisir un fichier…</span>
                   <input type="file" class="hidden" @change="onFile" />
                 </label>
