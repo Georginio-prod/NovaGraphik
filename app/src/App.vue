@@ -4,6 +4,7 @@ import { useRoute, RouterView } from 'vue-router'
 import NavBar from '@/components/layout/NavBar.vue'
 import SiteFooter from '@/components/layout/SiteFooter.vue'
 import ThemeToggle from '@/components/base/ThemeToggle.vue'
+import CursorGlow from '@/components/base/CursorGlow.vue'
 import { useTheme } from '@/composables/useTheme'
 
 const route = useRoute()
@@ -21,5 +22,6 @@ useTheme()
     </div>
     <RouterView />
     <SiteFooter v-if="!bare" />
+    <CursorGlow />
   </UApp>
 </template>
