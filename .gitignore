@@ -56,3 +56,6 @@ backend/uploads/*
 !backend/uploads/logo-*
 !backend/uploads/motion-*
 !backend/uploads/video-*
+
+# Supabase CLI temp
+supabase/.temp/
