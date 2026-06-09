@@ -3,7 +3,7 @@ import NButton from '@/components/base/NButton.vue'
 </script>
 
 <template>
-  <section class="bg-gradient-to-br from-nova-navy via-nova-teal to-nova-green relative overflow-hidden">
+  <section class="bg-gradient-to-b from-nova-green from-[-10%] via-nova-teal to-nova-navy relative overflow-hidden">
     <img
       src="/assets/compass-mark-white.png"
       alt=""

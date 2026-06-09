@@ -8,6 +8,7 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
 import NSectionHeader from '@/components/base/NSectionHeader.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
+import { novaGrad } from '@/lib/gradients'
 import ServiceCard from '@/components/sections/ServiceCard.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 import { RouterLink } from 'vue-router'
@@ -193,14 +194,17 @@ const heroParts = computed(() => {
               v-reveal="(i % 3) * 70"
               class="relative block rounded-lg overflow-hidden no-underline group"
               :class="!isMobile && i === 0 && 'row-span-2'"
-              :style="{ height: isMobile ? (i === 0 ? '240px' : '180px') : '100%' }"
+              :style="{ height: isMobile ? (i === 0 ? '240px' : '180px') : '100%', background: novaGrad(i + 1) }"
             >
-              <!-- Cells with a real cover photo show it; others stay placeholders -->
-              <template v-if="i < 3 && cell.cover">
+              <!-- Show the category cover when available; the branded gradient
+                   stays as the fallback. On a broken image we hide the <img>
+                   so the gradient behind shows. -->
+              <template v-if="cell.cover">
                 <img
                   :src="cell.cover"
                   :alt="cell.category"
                   class="absolute inset-0 w-full h-full object-cover transition-transform duration-nova-slow ease-nova group-hover:scale-105"
+                  @error="($event.target as HTMLImageElement).style.display = 'none'"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-nova-navy-900/85 via-nova-navy-900/30 to-transparent" />
               </template>

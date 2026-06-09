@@ -42,10 +42,7 @@ const ready = computed(() => fLoaded.value && pLoaded.value)
     <section class="py-11 tab:py-16 pb-10 bg-nova-paper">
       <NContainer>
         <NSectionHeader eyebrow="Formules · Identité visuelle" title="Choisissez votre formule" align="center" />
-        <div
-          class="grid gap-[22px] mt-8 tab:mt-12 items-stretch"
-          :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'"
-        >
+        <div class="grid gap-[22px] mt-8 tab:mt-12 items-stretch grid-cols-1 tab:grid-cols-2 desk:grid-cols-3">
           <div
             v-for="(f, i) in FORMULES"
             :key="f.id ?? f.name"

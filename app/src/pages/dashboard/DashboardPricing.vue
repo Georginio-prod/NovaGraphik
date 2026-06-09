@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import EntityListEditor from '@/components/dashboard/EntityListEditor.vue'
+import PricingGroupsEditor from '@/components/dashboard/PricingGroupsEditor.vue'
 
 const tab = ref<'formulas' | 'items'>('formulas')
 </script>
@@ -40,21 +41,5 @@ const tab = ref<'formulas' | 'items'>('formulas')
     :new-defaults="{ name: 'Nouvelle formule', price: '', features: [], is_hot: 0 }"
   />
 
-  <EntityListEditor
-    v-else
-    endpoint="pricing-items"
-    title="Tarifs détaillés"
-    subtitle="Les prestations listées par catégorie sous les formules. Le « Groupe » contrôle le regroupement visuel sur la page."
-    add-label="Ajouter un tarif"
-    :fields="[
-      { key: 'group_title', label: 'Groupe', placeholder: 'Ex. Identité visuelle' },
-      { key: 'group_icon', label: 'Icône du groupe', type: 'icon' },
-      { key: 'name', label: 'Prestation', placeholder: 'Ex. Logo professionnel' },
-      { key: 'description', label: 'Description', type: 'textarea', rows: 2, placeholder: 'Détails du livrable' },
-      { key: 'price', label: 'Prix', placeholder: 'Ex. 25 000' },
-    ]"
-    :item-label="(it) => it.name"
-    :item-sub-label="(it) => `${it.group_title} · ${it.price} FCFA`"
-    :new-defaults="{ group_title: '', group_icon: 'sparkles', name: 'Nouveau tarif', description: '', price: '' }"
-  />
+  <PricingGroupsEditor v-else />
 </template>

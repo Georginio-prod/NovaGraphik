@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { api } from '@/lib/api'
+import { readCache, writeCache } from '@/lib/cache'
 import type {
   NavItem,
   Service,
@@ -16,13 +17,15 @@ import type {
  * blogs, partners, etc.) consume one of these in their components.
  */
 function makeLoader<T>(path: string) {
-  const items = ref<T[]>([])
+  // Hydrate instantly from the last cached payload (stale-while-revalidate).
+  const items = ref<T[]>(readCache<T[]>(path) ?? [])
   const loaded = ref(false)
   async function load(force = false) {
     if (loaded.value && !force) return items.value
     try {
       const data = await api.get<{ items: T[] }>(path)
       items.value = data.items || []
+      writeCache(path, items.value)
     } catch {
       // keep previous
     } finally {

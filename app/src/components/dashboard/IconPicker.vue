@@ -23,7 +23,7 @@ function pick(name: string) {
     </button>
     <div
       v-if="open"
-      class="absolute z-30 mt-2 w-[300px] max-h-[260px] overflow-auto bg-nova-surface border border-line rounded-md shadow-nova-md p-2 grid grid-cols-7 gap-1"
+      class="absolute z-30 mt-2 w-[min(300px,calc(100vw-2rem))] max-h-[260px] overflow-auto bg-nova-surface border border-line rounded-md shadow-nova-md p-2 grid grid-cols-7 gap-1"
     >
       <button
         v-for="ic in CONTENT_ICONS"

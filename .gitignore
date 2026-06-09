@@ -51,3 +51,8 @@ backend/uploads/*
 !backend/uploads/wp-*
 !backend/uploads/samuel-*
 !backend/uploads/web-*
+# Portfolio source images scraped from novagraphik.fr (kept for reproducibility)
+!backend/uploads/flyer-*
+!backend/uploads/logo-*
+!backend/uploads/motion-*
+!backend/uploads/video-*

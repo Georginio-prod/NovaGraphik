@@ -17,11 +17,13 @@ const item = ref<PortfolioItem | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const lightboxSrc = ref<string | null>(null)
+const coverFailed = ref(false)
 
 async function load(slug: string) {
   loading.value = true
   notFound.value = false
   item.value = null
+  coverFailed.value = false
   try {
     const d = await api.get<{ item: PortfolioItem }>(`/portfolio/${slug}`)
     item.value = d.item
@@ -56,7 +58,13 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
     <section v-if="item" class="py-12 tab:py-16 bg-nova-paper">
       <NContainer>
         <div class="rounded-xl overflow-hidden border border-line">
-          <img v-if="item.cover_image" :src="item.cover_image" :alt="item.title" class="w-full max-h-[520px] object-cover block" />
+          <img
+            v-if="item.cover_image && !coverFailed"
+            :src="item.cover_image"
+            :alt="item.title"
+            class="w-full max-h-[520px] object-cover block"
+            @error="coverFailed = true"
+          />
           <div v-else class="h-[320px]" :style="{ background: novaGrad(item.id) }" />
         </div>
 
@@ -88,9 +96,10 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
               type="button"
               v-reveal="(i % 3) * 60"
               class="group relative block h-[240px] w-full cursor-pointer self-start overflow-hidden rounded-lg border border-line p-0"
+              :style="{ background: novaGrad(i) }"
               @click="lightboxSrc = media"
             >
-              <img :src="media" alt="" class="h-full w-full object-cover transition-transform duration-nova ease-nova group-hover:scale-105" />
+              <img :src="media" alt="" class="h-full w-full object-cover transition-transform duration-nova ease-nova group-hover:scale-105" @error="($event.target as HTMLImageElement).style.display = 'none'" />
               <span class="absolute inset-0 grid place-items-center bg-[rgba(2,44,61,0.55)] opacity-0 transition-opacity duration-nova group-hover:opacity-100">
                 <span class="inline-flex items-center gap-2 font-glyphic text-xs uppercase tracking-[0.18em] text-white">
                   Agrandir <NIcon name="arrow-up-right" :size="16" color="#0cf25d" />

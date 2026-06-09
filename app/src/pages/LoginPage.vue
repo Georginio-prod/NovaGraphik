@@ -5,6 +5,7 @@ import { useAuth } from '@/composables/useAuth'
 import NButton from '@/components/base/NButton.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
+import LogoNova from '@/components/base/LogoNova.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -39,7 +40,7 @@ async function submit() {
       class="absolute -right-[120px] -bottom-[120px] w-[520px] opacity-[0.07] pointer-events-none"
     />
     <div v-enter="0" class="relative w-full max-w-[420px] bg-nova-surface rounded-xl p-10 shadow-nova-lg">
-      <img src="/assets/logo-nova-graphik.png" alt="Nova Graphik" class="w-[130px] mb-6" />
+      <LogoNova variant="auto" entrance class="w-[150px] mb-6 text-fg-1" />
       <NEyebrow on-dark class="mb-2.5">Espace administrateur</NEyebrow>
       <h1 class="font-display text-[34px] font-semibold my-1.5 text-fg-1 tracking-tight">Connexion</h1>
       <p class="text-sm text-fg-3 m-0 mb-[26px]">Accédez au tableau de bord pour gérer le contenu du site.</p>

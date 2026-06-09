@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useViewport } from '@/composables/useViewport'
 import { usePartners, useTestimonials } from '@/composables/useEditable'
 import { novaGrad } from '@/lib/gradients'
 import NContainer from '@/components/base/NContainer.vue'
@@ -10,8 +9,6 @@ import NIcon from '@/components/base/NIcon.vue'
 import NSectionHeader from '@/components/base/NSectionHeader.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
-
-const { isMobile } = useViewport()
 
 const FALLBACK_PARTNERS = [
   { id: -1, name: 'Visiosphere', logo_url: '' },
@@ -43,10 +40,7 @@ const TESTIMONIALS = computed<any[]>(() => (tLoaded.value && liveTestis.value.le
 
     <section class="py-11 tab:py-16 bg-nova-paper">
       <NContainer>
-        <div
-          class="grid gap-4"
-          :class="isMobile ? 'grid-cols-2' : 'grid-cols-6'"
-        >
+        <div class="grid gap-4 grid-cols-2 tab:grid-cols-3 desk:grid-cols-6">
           <div
             v-for="p in PARTNERS"
             :key="p.id ?? p.name"
@@ -62,10 +56,7 @@ const TESTIMONIALS = computed<any[]>(() => (tLoaded.value && liveTestis.value.le
     <section class="pt-6 tab:pt-10 pb-16 tab:pb-24 bg-nova-fog">
       <NContainer>
         <NSectionHeader eyebrow="Avis clients" title="Ce que disent nos clients" align="center" />
-        <div
-          class="grid gap-6 mt-8 tab:mt-12"
-          :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'"
-        >
+        <div class="grid gap-6 mt-8 tab:mt-12 grid-cols-1 tab:grid-cols-2 desk:grid-cols-3">
           <div
             v-for="(t, i) in TESTIMONIALS"
             :key="t.id ?? i"

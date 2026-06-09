@@ -1,5 +1,12 @@
 import { ref, computed } from 'vue'
 import { api, type Section } from '@/lib/api'
+import { readCache, writeCache } from '@/lib/cache'
+
+function buildMap(sections: Section[]): Record<string, { title: string; body: string }> {
+  const next: Record<string, { title: string; body: string }> = {}
+  for (const s of sections) next[s.type] = { title: s.title, body: s.body }
+  return next
+}
 
 export const BUILT_IN_SECTION_TYPES = ['Hero', 'Services', 'Portfolios', 'Équipe'] as const
 export type BuiltInSectionType = (typeof BUILT_IN_SECTION_TYPES)[number]
@@ -14,17 +21,18 @@ export function isBuiltInSectionType(type: string): type is BuiltInSectionType {
 // dashboard edits. Falls back gracefully to design defaults when a section is
 // hidden or the API is unreachable.
 export function useSiteContent(page = 'home') {
-  const sections = ref<Section[]>([])
-  const map = ref<Record<string, { title: string; body: string }>>({})
+  const cacheKey = `sections:${page}`
+  const cached = readCache<Section[]>(cacheKey) ?? []
+  const sections = ref<Section[]>(cached)
+  const map = ref<Record<string, { title: string; body: string }>>(buildMap(cached))
   const loaded = ref(false)
 
   async function load() {
     try {
       const data = await api.get<{ sections: Section[] }>(`/sections?page=${page}`)
       sections.value = data.sections
-      const next: Record<string, { title: string; body: string }> = {}
-      for (const s of data.sections) next[s.type] = { title: s.title, body: s.body }
-      map.value = next
+      map.value = buildMap(data.sections)
+      writeCache(cacheKey, data.sections)
     } catch {
       // keep defaults
     } finally {

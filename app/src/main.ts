@@ -96,3 +96,20 @@ app.mount('#app')
 // Late-loading assets (fonts, images) change layout; refresh trigger positions
 // after full load so below-the-fold reveals stay accurate.
 window.addEventListener('load', () => ScrollTrigger.refresh())
+
+// Warm the lazy route chunks during idle time so the first click to another
+// public page is instant (no on-demand chunk fetch latency).
+const prefetchRoutes = () => {
+  void import('./pages/PortfolioPage.vue')
+  void import('./pages/ProjectPage.vue')
+  void import('./pages/BlogPage.vue')
+  void import('./pages/ContactPage.vue')
+  void import('./pages/PartnersPage.vue')
+  void import('./pages/PricingPage.vue')
+  void import('./pages/MemberPage.vue')
+}
+if ('requestIdleCallback' in window) {
+  ;(window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(prefetchRoutes)
+} else {
+  setTimeout(prefetchRoutes, 1500)
+}
