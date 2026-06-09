@@ -18,28 +18,39 @@ const esc = (s: unknown) =>
   String(s ?? '').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] as string))
 
 function buildHtml(d: {
-  name: string; email: string; services: string; message: string; file_url: string; file_name: string
+  name: string; email: string; phone: string; services: string; message: string; file_url: string; file_name: string
 }) {
   const fileBtn = d.file_url
-    ? `<a href="${esc(d.file_url)}" style="display:inline-block;margin-top:24px;background:#0cf25d;color:#042b16;text-decoration:none;font-weight:bold;padding:13px 22px;border-radius:6px;font-size:14px">Télécharger la pièce jointe${d.file_name ? ` — ${esc(d.file_name)}` : ''}</a>`
+    ? `<a href="${esc(d.file_url)}" style="display:inline-block;margin-top:24px;background:#022c3d;color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:6px;font-size:14px;border:2px solid #0cf25d">⬇  Télécharger la pièce jointe${d.file_name ? ` (${esc(d.file_name)})` : ''}</a>`
     : ''
-  return `
-  <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e6ecec;border-radius:12px;overflow:hidden">
-    <div style="padding:26px;text-align:center"><img src="${LOGO}" alt="Nova Graphik" width="190" style="display:block;margin:0 auto"/></div>
-    <div style="background:#022c3d;height:4px"></div>
-    <div style="padding:28px">
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:8px 0;color:#6b7d83;width:130px;vertical-align:top">${label}</td><td style="padding:8px 0;color:#0c1a1f">${value}</td></tr>`
+  return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">
+</head>
+<body style="margin:0;padding:24px;background:#eef2f1;font-family:Arial,Helvetica,sans-serif">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e6ecec;border-radius:12px;overflow:hidden">
+    <!-- logo on an explicit white panel so it stays visible in dark-mode clients -->
+    <div style="background:#ffffff;padding:26px;text-align:center">
+      <img src="${LOGO}" alt="Nova Graphik" width="190" style="display:block;margin:0 auto;background:#ffffff"/>
+    </div>
+    <div style="background:#022c3d;height:4px;font-size:0;line-height:0">&nbsp;</div>
+    <div style="padding:28px;background:#ffffff">
       <h2 style="color:#022c3d;margin:0 0 4px;font-size:20px">Nouvelle demande de devis</h2>
       <p style="color:#6b7d83;margin:0 0 20px;font-size:13px">Reçue via le site novagraphik.fr</p>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#0c1a1f">
-        <tr><td style="padding:8px 0;color:#6b7d83;width:130px">Nom</td><td style="padding:8px 0;font-weight:bold">${esc(d.name)}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d83">E-mail</td><td style="padding:8px 0"><a href="mailto:${esc(d.email)}" style="color:#02735e">${esc(d.email)}</a></td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d83">Services</td><td style="padding:8px 0">${esc(d.services) || '—'}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d83;vertical-align:top">Message</td><td style="padding:8px 0;white-space:pre-line">${esc(d.message)}</td></tr>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        ${row('Nom', `<strong>${esc(d.name)}</strong>`)}
+        ${row('E-mail', `<a href="mailto:${esc(d.email)}" style="color:#02735e">${esc(d.email)}</a>`)}
+        ${row('Téléphone', d.phone ? `<a href="tel:${esc(d.phone)}" style="color:#02735e">${esc(d.phone)}</a>` : '—')}
+        ${row('Services', esc(d.services) || '—')}
+        ${row('Message', `<span style="white-space:pre-line">${esc(d.message)}</span>`)}
       </table>
       ${fileBtn}
     </div>
     <div style="background:#f1f5f4;padding:16px;text-align:center;color:#8aa1a4;font-size:11px">Répondez à cet e-mail pour contacter le client.</div>
-  </div>`
+  </div>
+</body></html>`
 }
 
 Deno.serve(async (req: Request) => {
@@ -54,6 +65,7 @@ Deno.serve(async (req: Request) => {
     const d = {
       name: String(b.name ?? '').trim(),
       email: String(b.email ?? '').trim(),
+      phone: String(b.phone ?? '').trim(),
       services: String(b.services ?? '').trim(),
       message: String(b.message ?? '').trim(),
       file_url: String(b.file_url ?? '').trim(),

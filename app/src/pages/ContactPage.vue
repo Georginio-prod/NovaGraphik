@@ -76,6 +76,7 @@ async function sendViaFunction(fileUrl: string, fileName: string) {
     body: {
       name: name.value.trim(),
       email: email.value.trim(),
+      phone: phone.value.trim(),
       services: sel.value.join(', ') || '—',
       message: message.value.trim(),
       file_url: fileUrl,
@@ -89,6 +90,7 @@ async function sendViaFormSubmit(fileUrl: string) {
   const body: Record<string, string> = {
     Nom: name.value.trim(),
     Email: email.value.trim(),
+    'Téléphone': phone.value.trim(),
     'Type de service': sel.value.join(', ') || '—',
     Message: message.value.trim(),
     _subject: `Nouvelle demande de devis — ${name.value.trim()}`,
@@ -110,17 +112,19 @@ function toggleService(s: string) {
 }
 const name = ref('')
 const email = ref('')
+const phone = ref('')
 const message = ref('')
-const errors = ref<{ name?: string; email?: string; message?: string }>({})
+const errors = ref<{ name?: string; email?: string; phone?: string; message?: string }>({})
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function validate() {
-  const next: { name?: string; email?: string; message?: string } = {}
+  const next: { name?: string; email?: string; phone?: string; message?: string } = {}
   if (!name.value.trim()) next.name = 'Indiquez votre nom.'
   const mail = email.value.trim()
   if (!mail) next.email = 'Indiquez votre e-mail.'
   else if (!EMAIL_RE.test(mail)) next.email = 'Adresse e-mail invalide.'
+  if (!phone.value.trim()) next.phone = 'Indiquez votre numéro de téléphone.'
   if (!message.value.trim()) next.message = 'Décrivez votre projet.'
   errors.value = next
   return Object.keys(next).length === 0
@@ -155,6 +159,7 @@ function reset() {
   sendError.value = ''
   name.value = ''
   email.value = ''
+  phone.value = ''
   message.value = ''
   sel.value = ['Identité visuelle']
   file.value = null
@@ -218,6 +223,7 @@ function reset() {
               <div class="grid gap-4 grid-cols-1 tab:grid-cols-2">
                 <NField v-model="name" label="Nom complet" placeholder="Votre nom" :error="errors.name" />
                 <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
+                <NField v-model="phone" type="tel" label="Téléphone" placeholder="+228 90 00 00 00" :error="errors.phone" />
               </div>
               <div class="mt-4">
                 <label class="text-[11px] font-semibold tracking-wider uppercase text-fg-2">Type de service <span class="font-normal text-fg-3 normal-case tracking-normal">(choix multiple)</span></label>
