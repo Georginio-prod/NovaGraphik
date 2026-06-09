@@ -4,6 +4,7 @@ import { useViewport } from '@/composables/useViewport'
 import { useSettings } from '@/composables/useSettings'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
+import LogoNova from '@/components/base/LogoNova.vue'
 
 const { isMobile } = useViewport()
 const { get, load } = useSettings()
@@ -39,12 +40,9 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
       class="mx-auto max-w-[1200px] relative"
       :class="isMobile ? 'px-5 pt-12 pb-7' : 'px-8 pt-[72px] pb-8'"
     >
-      <div
-        class="grid gap-10"
-        :class="isMobile ? 'grid-cols-2 gap-7' : 'grid-cols-[1.4fr_1fr_1fr_1.3fr] gap-10'"
-      >
-        <div :class="isMobile && 'col-span-2'">
-          <img src="/assets/logo-nova-mark-white.png" alt="Nova Graphik" class="w-[130px] mb-[18px] block" />
+      <div class="grid grid-cols-1 gap-8 min-[560px]:grid-cols-2 min-[560px]:gap-7 desk:grid-cols-[1.4fr_1fr_1fr_1.3fr] desk:gap-10">
+        <div class="min-[560px]:col-span-2 desk:col-span-1">
+          <LogoNova variant="white" interactive class="w-[150px] mb-[18px] block" />
           <p class="text-[13.5px] leading-relaxed text-fg-on-dark-2 max-w-[280px] m-0">
             Agence de communication visuelle — identité, print, digital & motion design.
           </p>
@@ -54,9 +52,10 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
           <a
             v-for="[icon, label] in contacts"
             :key="label"
-            class="flex items-center gap-2 text-[13.5px] mb-[11px] cursor-pointer text-fg-on-dark-2 transition-colors duration-nova hover:text-white"
+            class="flex items-start gap-2 text-[13.5px] mb-[11px] cursor-pointer text-fg-on-dark-2 transition-colors duration-nova hover:text-white"
           >
-            <NIcon :name="icon" :size="15" color="#0cf25d" />{{ label }}
+            <NIcon :name="icon" :size="15" color="#0cf25d" class="shrink-0 mt-0.5" />
+            <span class="min-w-0 break-words">{{ label }}</span>
           </a>
         </div>
         <div>
@@ -69,7 +68,7 @@ const siteTitle = computed(() => get('site_title', 'Nova Graphik'))
             rel="noopener"
             class="flex items-center gap-2 text-[13.5px] mb-[11px] cursor-pointer text-fg-on-dark-2 transition-colors duration-nova hover:text-white no-underline"
           >
-            <NIcon :name="icon" :size="15" color="#0cf25d" />{{ label }}
+            <NIcon :name="icon" :size="15" color="#0cf25d" class="shrink-0" /><span class="min-w-0 break-words">{{ label }}</span>
           </a>
         </div>
         <div>

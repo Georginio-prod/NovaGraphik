@@ -25,7 +25,13 @@ const heightCss = computed(() =>
     :class="radius"
     :style="{ height: heightCss, background: novaGrad(idx) }"
   >
-    <img v-if="src" :src="src" alt="" class="absolute inset-0 w-full h-full object-cover" />
+    <img
+      v-if="src"
+      :src="src"
+      alt=""
+      class="absolute inset-0 w-full h-full object-cover"
+      @error="($event.target as HTMLImageElement).style.display = 'none'"
+    />
     <img
       v-else
       src="/assets/compass-mark-white.png"

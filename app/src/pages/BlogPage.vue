@@ -41,8 +41,7 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3, 7))
       <NContainer>
         <article
           v-if="featured"
-          class="grid bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12"
-          :class="isMobile ? 'grid-cols-1 gap-0' : 'grid-cols-[1.2fr_1fr] gap-8'"
+          class="grid bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12 grid-cols-1 gap-0 tab:grid-cols-[1.2fr_1fr] tab:gap-8"
         >
           <NPlaceholder :idx="0" :height="isMobile ? 200 : 320" radius="rounded-none" :src="featured.cover_image || undefined" label="À la une" />
           <div class="self-center" :class="isMobile ? 'p-6' : 'py-10 pr-10 pl-2'">
@@ -57,8 +56,7 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3, 7))
 
         <div
           v-if="ARTICLES.length > 1"
-          class="grid gap-[22px] mb-[22px]"
-          :class="isMobile ? 'grid-cols-1' : 'grid-cols-2'"
+          class="grid gap-[22px] mb-[22px] grid-cols-1 tab:grid-cols-2"
         >
           <article
             v-for="(a, i) in ARTICLES.slice(1)"
@@ -77,8 +75,7 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3, 7))
 
         <div
           v-if="ARTICLES_SM.length"
-          class="grid gap-[22px]"
-          :class="isMobile ? 'grid-cols-2' : 'grid-cols-4'"
+          class="grid gap-[22px] grid-cols-2 tab:grid-cols-3 desk:grid-cols-4"
         >
           <article
             v-for="(a, i) in ARTICLES_SM"

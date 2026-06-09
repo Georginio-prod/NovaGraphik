@@ -52,8 +52,8 @@ watch(() => route.params.slug, (s) => s && load(String(s)))
     <section v-if="member" class="py-12 tab:py-20 bg-nova-paper">
       <NContainer>
         <div class="grid grid-cols-1 tab:grid-cols-[320px_1fr] gap-10 items-start">
-          <div class="rounded-lg overflow-hidden aspect-square" :style="!member.photo ? { background: novaGrad(member.id) } : {}">
-            <img v-if="member.photo" :src="member.photo" :alt="member.name" class="w-full h-full object-cover" />
+          <div class="rounded-lg overflow-hidden aspect-square" :style="{ background: novaGrad(member.id) }">
+            <img v-if="member.photo" :src="member.photo" :alt="member.name" class="w-full h-full object-cover" @error="($event.target as HTMLImageElement).style.display = 'none'" />
           </div>
           <div>
             <NEyebrow class="mb-3">À propos</NEyebrow>

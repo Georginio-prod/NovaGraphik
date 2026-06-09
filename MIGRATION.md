@@ -20,14 +20,33 @@ partagé). C'est appliqué par les politiques RLS, plus par un backend.
 
 ## Étape 1 — Créer le schéma dans Supabase
 
-Dans le projet Supabase (le même que celui utilisé pour le login) :
+Le schéma vit dans `supabase/migrations/` (source de vérité) ; `supabase/seed.sql`
+contient les données de départ (généré depuis l'ancien SQLite). Deux façons de
+les appliquer :
 
-1. **SQL Editor → New query**, colle tout `supabase/schema.sql`, **Run**.
+**Option A — Supabase CLI (recommandé)**
+
+```bash
+supabase link --project-ref iksyoxumzctnwxeziiad
+supabase db push                 # applique migrations/*.sql (tables + RLS + bucket)
+psql "$SUPABASE_DB_URL" -f supabase/seed.sql   # charge les données
+```
+
+**Option B — SQL Editor (sans CLI)**
+
+1. **SQL Editor → New query**, colle `supabase/migrations/20260609120000_foundation_schema.sql`, **Run**.
    Ça crée les 11 tables, les politiques RLS, et le bucket Storage `media`.
-2. Vérifie : **Table editor** liste les tables, **Storage** montre le bucket
-   `media` (public).
+2. Nouvelle query, colle `supabase/seed.sql`, **Run** — charge le contenu
+   (sections, services, portfolios, équipe, tarifs, articles…) de façon
+   idempotente (`on conflict do update`).
+3. Vérifie : **Table editor** liste les tables remplies, **Storage** montre le
+   bucket `media` (public).
 
-## Étape 2 — Migrer les données existantes
+> Le seed insère les **lignes** et réécrit les URLs `/uploads/…` vers le bucket
+> `media`. Les **fichiers médias** eux-mêmes doivent encore être téléversés dans
+> le bucket — voir l'Étape 2 (le script gère l'upload).
+
+## Étape 2 — Migrer les médias (et/ou les données) existants
 
 Tes données vivent aujourd'hui dans le SQLite + le dossier uploads du backend
 (en prod : sur le volume Railway monté à `/data`).

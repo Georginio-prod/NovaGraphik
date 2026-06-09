@@ -78,9 +78,9 @@ const parseJson = <T>(v: unknown, fallback: T): T => {
 
 const rows = (sql: string): any[] => db.prepare(sql).all() as any[]
 
-async function migrateTable(table: string, data: any[]): Promise<void> {
+async function migrateTable(table: string, data: any[], conflict = 'id'): Promise<void> {
   if (!data.length) { console.log(`→ ${table}: 0 rows`); return }
-  const { error } = await supabase.from(table).upsert(data, { onConflict: 'id' })
+  const { error } = await supabase.from(table).upsert(data, { onConflict: conflict })
   if (error) console.error(`  ✗ ${table}: ${error.message}`)
   else console.log(`→ ${table}: ${data.length} rows ✓`)
 }
@@ -97,7 +97,7 @@ async function migrateData(): Promise<void> {
   })))
   await migrateTable('settings', rows('SELECT key, value FROM settings').map((r) => ({
     ...r, value: rewriteUrl(r.value),
-  })))
+  })), 'key')
   await migrateTable('nav_items', rows('SELECT * FROM nav_items'))
   await migrateTable('services', rows('SELECT * FROM services'))
   await migrateTable('articles', rows('SELECT * FROM articles').map((r) => ({

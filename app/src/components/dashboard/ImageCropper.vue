@@ -123,8 +123,8 @@ function confirm() {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-[80] grid place-items-center bg-black/55 p-4" @pointerup="onUp">
-    <div class="w-full max-w-[380px] rounded-xl bg-nova-surface p-5 shadow-nova-lg">
+  <div class="fixed inset-0 z-[80] grid place-items-center bg-black/55 p-2 tab:p-4" @pointerup="onUp">
+    <div class="w-full max-w-[380px] rounded-xl bg-nova-surface p-4 tab:p-5 shadow-nova-lg">
       <h3 class="mb-1 font-display text-lg font-semibold text-fg-1">Ajuster l'image</h3>
       <p class="mb-4 text-[12.5px] leading-snug text-fg-3">
         Glissez pour déplacer, utilisez le curseur pour zoomer et cadrer le visage.

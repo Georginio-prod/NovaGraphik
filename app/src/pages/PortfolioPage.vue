@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useViewport } from '@/composables/useViewport'
 import { usePortfolio } from '@/composables/usePortfolio'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
@@ -11,7 +10,6 @@ import NIcon from '@/components/base/NIcon.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 
-const { isMobile } = useViewport()
 const { items, categories, load } = usePortfolio()
 const route = useRoute()
 const router = useRouter()
@@ -54,7 +52,7 @@ const filtered = computed(() => (cat.value === 'Tout' ? items.value : items.valu
           >{{ c }}</NPill>
         </div>
 
-        <div v-if="filtered.length" class="grid gap-[22px]" :class="isMobile ? 'grid-cols-1' : 'grid-cols-3'">
+        <div v-if="filtered.length" class="grid gap-[22px] grid-cols-1 tab:grid-cols-2 desk:grid-cols-3">
           <RouterLink
             v-for="(it, i) in filtered"
             :key="it.id"
@@ -63,8 +61,7 @@ const filtered = computed(() => (cat.value === 'Tout' ? items.value : items.valu
             class="group rounded-lg overflow-hidden cursor-pointer shadow-nova-sm transition-all duration-nova ease-nova bg-nova-surface border border-line hover:shadow-nova-lg hover:-translate-y-1 no-underline block"
           >
             <div class="relative overflow-hidden">
-              <img v-if="it.cover_image" :src="it.cover_image" :alt="it.title" class="w-full h-[230px] object-cover block" />
-              <NPlaceholder v-else :idx="i" :height="230" radius="rounded-none" />
+              <NPlaceholder :idx="i" :height="230" radius="rounded-none" :src="it.cover_image || undefined" />
               <div
                 class="absolute inset-0 bg-[rgba(2,44,61,0.55)] grid place-items-center opacity-0 transition-opacity duration-nova group-hover:opacity-100"
               >

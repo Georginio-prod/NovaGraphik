@@ -7,6 +7,7 @@ import { useNav } from '@/composables/useEditable'
 import NIcon from '@/components/base/NIcon.vue'
 import NButton from '@/components/base/NButton.vue'
 import ThemeToggle from '@/components/base/ThemeToggle.vue'
+import LogoNova from '@/components/base/LogoNova.vue'
 
 // Static fallback used while the live nav loads (and if the API is down).
 const FALLBACK_NAV: { label: string; path: string }[] = [
@@ -26,7 +27,11 @@ const NAV_ITEMS = computed<{ label: string; path: string }[]>(() =>
 
 const route = useRoute()
 const router = useRouter()
-const { isMobile } = useViewport()
+const { isMobile, isTablet } = useViewport()
+// The full horizontal nav (6 links + CTA + toggle) only fits on real desktops.
+// Below the `desk` breakpoint (incl. the 760–1040 tablet range) we collapse to
+// the hamburger menu so it never overflows horizontally.
+const compact = computed(() => isMobile.value || isTablet.value)
 const { y } = useWindowScroll()
 const open = ref(false)
 
@@ -56,15 +61,16 @@ function goM(path: string) {
       :class="isMobile ? 'px-5 h-[62px]' : 'px-8 h-[74px]'"
     >
       <RouterLink to="/" class="inline-flex">
-        <img
-          src="/assets/logo-nova-graphik.png"
-          alt="Nova Graphik"
-          class="block cursor-pointer"
-          :class="isMobile ? 'h-7' : 'h-[34px]'"
+        <LogoNova
+          variant="auto"
+          entrance
+          interactive
+          class="block text-fg-1"
+          :class="isMobile ? 'w-[76px]' : 'w-[94px]'"
         />
       </RouterLink>
 
-      <nav v-if="!isMobile" class="flex gap-[26px]">
+      <nav v-if="!compact" class="flex gap-[26px]">
         <RouterLink
           v-for="item in NAV_ITEMS"
           :key="item.path"
@@ -74,7 +80,7 @@ function goM(path: string) {
         >{{ item.label }}</RouterLink>
       </nav>
 
-      <div v-if="!isMobile" class="flex gap-3 items-center">
+      <div v-if="!compact" class="flex gap-3 items-center">
         <ThemeToggle />
         <NButton variant="accent" size="sm" to="/contact">Demander un devis</NButton>
       </div>
@@ -89,7 +95,7 @@ function goM(path: string) {
       </button>
     </div>
 
-    <div v-if="isMobile && open" class="border-t border-line px-5 pt-3 pb-5 flex flex-col gap-0.5">
+    <div v-if="compact && open" class="border-t border-line px-5 pt-3 pb-5 flex flex-col gap-0.5">
       <RouterLink
         v-for="item in NAV_ITEMS"
         :key="item.path"

@@ -2,6 +2,7 @@
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import NIcon from '@/components/base/NIcon.vue'
+import LogoNova from '@/components/base/LogoNova.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,7 +37,7 @@ async function signOut() {
       class="hidden min-[901px]:flex w-[248px] shrink-0 sticky top-0 h-screen box-border flex-col bg-nova-navy-900 text-white py-6 px-4"
     >
       <RouterLink to="/admin">
-        <img src="/assets/logo-nova-mark-white.png" alt="Nova" class="w-[110px] mx-2 mb-7 mt-1.5" />
+        <LogoNova variant="white" interactive class="w-[128px] mx-2 mb-7 mt-1.5 block" />
       </RouterLink>
       <nav class="flex flex-col gap-1">
         <RouterLink
@@ -68,7 +69,7 @@ async function signOut() {
     <!-- Mobile top nav -->
     <div class="min-[901px]:hidden fixed top-0 inset-x-0 z-40 bg-nova-navy-900 text-white">
       <div class="flex items-center justify-between px-4 h-14">
-        <img src="/assets/logo-nova-mark-white.png" alt="Nova" class="h-6" />
+        <LogoNova variant="white" class="w-[88px] block" />
         <button class="flex items-center gap-1.5 text-[12px] text-fg-on-dark-2" @click="signOut">
           <NIcon name="log-out" :size="15" /> Quitter
         </button>
@@ -87,7 +88,7 @@ async function signOut() {
     </div>
 
     <!-- Main -->
-    <main class="flex-1 p-7 px-9 overflow-auto pt-[112px] min-[901px]:pt-7">
+    <main class="flex-1 overflow-auto p-4 pt-[108px] min-[901px]:p-7 min-[901px]:px-9 min-[901px]:pt-7">
       <RouterView />
     </main>
   </div>

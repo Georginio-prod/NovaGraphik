@@ -3,13 +3,18 @@ import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { novaGrad } from '@/lib/gradients'
 import { gsap, ScrollTrigger, NOVA, prefersReducedMotion } from '@/lib/gsap'
+import { useViewport } from '@/composables/useViewport'
 import type { TeamMember } from '@/lib/api'
 
 const props = defineProps<{ members: TeamMember[] }>()
 
 type Node = TeamMember & { children: Node[]; x: number; y: number; depth: number; ci: number }
 
+const { isMobile } = useViewport()
 const hasHierarchy = computed(() => props.members.some((m) => m.parent_id != null))
+// On mobile the SVG pyramid would force horizontal scrolling, so we always fall
+// back to a simple card grid that lists everyone (hierarchy is desktop-only).
+const showGrid = computed(() => !hasHierarchy.value || isMobile.value)
 
 // ─── Geometry ─────────────────────────────────────────────────────────────────
 const R = 36 // circle radius
@@ -128,13 +133,13 @@ function build() {
   ScrollTrigger.refresh()
 }
 
-watch(() => props.members, () => nextTick(build), { deep: true, immediate: true })
+watch([() => props.members, isMobile], () => nextTick(build), { deep: true, immediate: true })
 onBeforeUnmount(kill)
 </script>
 
 <template>
-  <!-- flat team → clean grid -->
-  <div v-if="!hasHierarchy" class="grid grid-cols-1 tab:grid-cols-3 gap-6 mt-12">
+  <!-- flat team (or any team on mobile) → clean card grid showing everyone -->
+  <div v-if="showGrid" class="grid grid-cols-2 desk:grid-cols-3 gap-x-4 gap-y-7 tab:gap-6 mt-10 tab:mt-12">
     <RouterLink
       v-for="(m, i) in members"
       :key="m.id"
@@ -144,18 +149,18 @@ onBeforeUnmount(kill)
     >
       <div
         class="aspect-square w-full max-w-[260px] mx-auto rounded-lg overflow-hidden transition-transform duration-nova ease-nova group-hover:-translate-y-1"
-        :style="!m.photo ? { background: novaGrad(i) } : {}"
+        :style="{ background: novaGrad(i) }"
       >
-        <img v-if="m.photo" :src="m.photo" :alt="m.name" class="w-full h-full object-cover" />
+        <img v-if="m.photo" :src="m.photo" :alt="m.name" class="w-full h-full object-cover" @error="($event.target as HTMLImageElement).style.display = 'none'" />
       </div>
-      <h3 class="font-display text-[22px] font-semibold mt-[18px] mb-1 text-fg-1 group-hover:text-nova-teal transition-colors duration-nova">
+      <h3 class="font-display text-[18px] tab:text-[22px] font-semibold mt-3 tab:mt-[18px] mb-1 text-fg-1 group-hover:text-nova-teal transition-colors duration-nova">
         {{ m.name }}
       </h3>
-      <div class="font-glyphic text-[11px] tracking-[0.22em] uppercase text-nova-teal">{{ m.role }}</div>
+      <div class="font-glyphic text-[10px] tab:text-[11px] tracking-[0.18em] tab:tracking-[0.22em] uppercase text-nova-teal">{{ m.role }}</div>
     </RouterLink>
   </div>
 
-  <!-- hierarchy → pyramid lattice with continuous SVG bus + GSAP draw-in -->
+  <!-- hierarchy → pyramid lattice with continuous SVG bus + GSAP draw-in (desktop) -->
   <div v-else ref="chartRef" class="mt-12 overflow-x-auto pb-4">
     <div class="relative mx-auto" :style="{ width: layout.width + 'px', height: layout.height + 'px' }">
       <svg
@@ -186,9 +191,9 @@ onBeforeUnmount(kill)
         <RouterLink :to="`/equipe/${n.slug}`" class="group flex flex-col items-center no-underline">
           <div
             class="overflow-hidden rounded-full ring-2 ring-line transition-all duration-nova ease-nova group-hover:-translate-y-0.5 group-hover:ring-nova-lime group-hover:shadow-nova-md"
-            :style="[{ width: R * 2 + 'px', height: R * 2 + 'px' }, !n.photo ? { background: novaGrad(n.ci) } : {}]"
+            :style="[{ width: R * 2 + 'px', height: R * 2 + 'px' }, { background: novaGrad(n.ci) }]"
           >
-            <img v-if="n.photo" :src="n.photo" :alt="n.name" class="h-full w-full object-cover" />
+            <img v-if="n.photo" :src="n.photo" :alt="n.name" class="h-full w-full object-cover" @error="($event.target as HTMLImageElement).style.display = 'none'" />
           </div>
           <div class="mt-2.5 text-center font-display text-[16px] font-semibold leading-tight text-fg-1 transition-colors duration-nova group-hover:text-nova-teal">
             {{ n.name }}

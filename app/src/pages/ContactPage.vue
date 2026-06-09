@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useViewport } from '@/composables/useViewport'
 import { useSettings } from '@/composables/useSettings'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
@@ -11,7 +10,6 @@ import NIcon from '@/components/base/NIcon.vue'
 import NSectionHeader from '@/components/base/NSectionHeader.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 
-const { isMobile } = useViewport()
 const { get, load } = useSettings()
 onMounted(load)
 
@@ -81,8 +79,7 @@ function reset() {
     <section class="py-11 tab:py-16 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
         <div
-          class="grid items-start gap-10 tab:gap-14"
-          :class="isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_1.3fr]'"
+          class="grid items-start gap-10 tab:gap-14 grid-cols-1 desk:grid-cols-[1fr_1.3fr]"
         >
           <div>
             <NSectionHeader eyebrow="Coordonnées" title="Nova Graphik" />
@@ -112,8 +109,7 @@ function reset() {
           </div>
 
           <div
-            class="bg-nova-surface border border-line rounded-xl shadow-nova-md"
-            :class="isMobile ? 'p-6' : 'p-[38px]'"
+            class="bg-nova-surface border border-line rounded-xl shadow-nova-md p-6 tab:p-8 desk:p-[38px]"
           >
             <div v-if="sent" class="text-center py-10">
               <div class="w-16 h-16 rounded-full bg-nova-lime grid place-items-center mx-auto mb-[22px]">
@@ -125,10 +121,7 @@ function reset() {
             </div>
             <template v-else>
               <NEyebrow class="mb-5">Demander un devis</NEyebrow>
-              <div
-                class="grid gap-4"
-                :class="isMobile ? 'grid-cols-1' : 'grid-cols-2'"
-              >
+              <div class="grid gap-4 grid-cols-1 tab:grid-cols-2">
                 <NField v-model="name" label="Nom complet" placeholder="Votre nom" :error="errors.name" />
                 <NField v-model="email" type="email" label="E-mail" placeholder="vous@marque.tg" :error="errors.email" />
               </div>

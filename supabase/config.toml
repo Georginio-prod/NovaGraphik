@@ -1,0 +1,14 @@
+# Supabase CLI config — Nova Graphik
+# Links this repo to the hosted project. Apply with:
+#   supabase link --project-ref iksyoxumzctnwxeziiad
+#   supabase db push          # runs migrations/*.sql
+#   supabase db push --include-seed   # also runs seed.sql (or: psql < supabase/seed.sql)
+project_id = "iksyoxumzctnwxeziiad"
+
+[db]
+# Local dev Postgres port (only used by `supabase start`).
+port = 54322
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
