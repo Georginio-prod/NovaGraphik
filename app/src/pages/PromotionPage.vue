@@ -31,10 +31,20 @@ const FALLBACK: Promotion[] = [
 ]
 
 const { items: live, loaded, load } = usePromotions()
+
+function onVisible() {
+  if (document.visibilityState === 'visible' && loaded.value) void load()
+}
+
 onMounted(async () => {
   await load()
   await nextTick()
   setupReveal()
+  document.addEventListener('visibilitychange', onVisible)
+})
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  document.removeEventListener('visibilitychange', onVisible)
 })
 
 // First visit with an empty cache → show shimmer skeletons instead of flashing
@@ -74,7 +84,6 @@ function setupReveal() {
   )
   els.forEach((el) => observer!.observe(el))
 }
-onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <template>

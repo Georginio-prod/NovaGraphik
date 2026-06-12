@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { api } from '@/lib/api'
 import { createOrder } from '@/composables/useOrders'
@@ -25,22 +25,33 @@ const codes = computed<PromoCode[]>(() => (promo.value?.codes || []).filter((c) 
 // live site so a scan always lands somewhere useful.
 const qrValue = computed(() => promo.value?.qr_target?.trim() || (promo.value ? promoUrl(promo.value.slug) : ''))
 
-async function load() {
-  loading.value = true
-  notFound.value = false
+async function load(opts?: { silent?: boolean }) {
+  const silent = opts?.silent ?? false
+  if (!silent) {
+    loading.value = true
+    notFound.value = false
+  }
   try {
     const slug = String(route.params.slug)
     const data = await api.get<{ item: Promotion }>(`/promotions/${slug}`)
     promo.value = data.item
     selectedCode.value = (data.item.codes || []).find((c) => c.code)?.code || ''
   } catch {
-    notFound.value = true
+    if (!silent) notFound.value = true
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
-onMounted(load)
-watch(() => route.params.slug, load)
+
+function onVisible() {
+  if (document.visibilityState === 'visible' && promo.value) void load({ silent: true })
+}
+onMounted(() => {
+  void load()
+  document.addEventListener('visibilitychange', onVisible)
+})
+onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisible))
+watch(() => route.params.slug, () => load())
 
 // ── Order form ──────────────────────────────────────────────────────────────
 const selectedCode = ref('')

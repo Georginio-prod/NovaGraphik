@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { novaGrad } from '@/lib/gradients'
+import { aspectCss } from '@/lib/media'
 
 const props = withDefaults(defineProps<{
   label?: string
@@ -17,16 +18,26 @@ const props = withDefaults(defineProps<{
 const heightCss = computed(() =>
   typeof props.height === 'number' ? `${props.height}px` : props.height,
 )
+
+// When the image carries a cropped format (`?ar=`), size the frame to it so the
+// chosen ratio is honoured instead of being re-cropped by the fixed height.
+const boxStyle = computed(() => {
+  const ar = aspectCss(props.src)
+  return ar
+    ? { aspectRatio: ar, background: novaGrad(props.idx) }
+    : { height: heightCss.value, background: novaGrad(props.idx) }
+})
 </script>
 
 <template>
   <div
     class="relative overflow-hidden flex items-end p-4 box-border"
     :class="radius"
-    :style="{ height: heightCss, background: novaGrad(idx) }"
+    :style="boxStyle"
   >
     <img
       v-if="src"
+      :key="src"
       :src="src"
       alt=""
       class="absolute inset-0 w-full h-full object-cover"

@@ -21,14 +21,13 @@ function makeLoader<T>(path: string) {
   // Hydrate instantly from the last cached payload (stale-while-revalidate).
   const items = ref<T[]>(readCache<T[]>(path) ?? [])
   const loaded = ref(false)
-  async function load(force = false) {
-    if (loaded.value && !force) return items.value
+  async function load() {
     try {
       const data = await api.get<{ items: T[] }>(path)
       items.value = data.items || []
       writeCache(path, items.value)
     } catch {
-      // keep previous
+      // keep previous (stale cache or last successful fetch)
     } finally {
       loaded.value = true
     }

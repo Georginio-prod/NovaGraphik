@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/lib/api'
+import { invalidateCache } from '@/lib/cache'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import IconPicker from '@/components/dashboard/IconPicker.vue'
@@ -75,6 +76,16 @@ function onEdit() {
   clearTimeout(timer)
   timer = setTimeout(save, 600)
 }
+function setField(key: string, value: unknown, opts?: { flush?: boolean }) {
+  const it = cur.value
+  if (!it) return
+  it[key] = value
+  onEdit()
+  if (opts?.flush) {
+    clearTimeout(timer)
+    void save()
+  }
+}
 async function save() {
   const it = cur.value
   if (!it) return
@@ -82,6 +93,7 @@ async function save() {
     const payload: Record<string, any> = { visible: it.visible }
     for (const f of props.fields) payload[f.key] = it[f.key]
     await api.put(`/admin/${props.endpoint}/${it.id}`, payload)
+    invalidateCache(`/${props.endpoint}`)
     saveState.value = 'saved'
   } catch {
     saveState.value = 'idle'
@@ -209,7 +221,16 @@ function removeFromList(field: string, i: number) {
         <div v-if="f.type === 'icon'" class="mt-2"><IconPicker v-model="cur[f.key]" @update:model-value="onEdit" /></div>
         <div v-else-if="f.type === 'qr'" class="mt-2"><QrField v-model="cur[f.key]" :placeholder="f.placeholder" @update:model-value="onEdit" /></div>
         <div v-else-if="f.type === 'codes'" class="mt-2"><PromoCodesField v-model="cur[f.key]" :seed="cur.title" @update:model-value="onEdit" /></div>
-        <div v-else-if="f.type === 'image'" class="mt-2"><ImageField v-model="cur[f.key]" :height="140" :aspect="f.aspect" :round="f.round" :lock-format="f.lockFormat" @update:model-value="onEdit" /></div>
+        <div v-else-if="f.type === 'image'" class="mt-2">
+          <ImageField
+            :model-value="cur[f.key]"
+            :height="140"
+            :aspect="f.aspect"
+            :round="f.round"
+            :lock-format="f.lockFormat"
+            @update:model-value="(v) => setField(f.key, v, { flush: true })"
+          />
+        </div>
         <select
           v-else-if="f.type === 'select'"
           v-model="cur[f.key]"

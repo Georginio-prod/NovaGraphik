@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { uploadImage } from '@/composables/useUpload'
-import { isVideoUrl, getMediaMeta, withRatio, ratioCss, VIDEO_FORMATS, DEFAULT_VIDEO_FORMAT } from '@/lib/media'
+import { fetchImageBlobUrl } from '@/lib/imageCrop'
+import { isVideoUrl, getMediaMeta, withRatio, ratioCss, aspectCss, VIDEO_FORMATS, DEFAULT_VIDEO_FORMAT } from '@/lib/media'
 import NIcon from '@/components/base/NIcon.vue'
 import ImageCropper from './ImageCropper.vue'
 import MediaLightbox from '@/components/base/MediaLightbox.vue'
@@ -19,12 +20,16 @@ const input = ref<HTMLInputElement | null>(null)
 
 const isVideo = computed(() => isVideoUrl(model.value))
 const ratioCode = computed(() => getMediaMeta(model.value).ratio || DEFAULT_VIDEO_FORMAT)
-// Videos size by their chosen aspect ratio (capped); images keep the fixed height.
-const previewStyle = computed(() =>
-  isVideo.value
-    ? { aspectRatio: ratioCss(ratioCode.value), maxHeight: '260px', margin: '0 auto' }
-    : { height: `${props.height}px` },
-)
+// Videos size by their chosen aspect ratio; images by the format they were
+// cropped to (carried on the URL as `?ar=`). Both fall back to the fixed height.
+const previewStyle = computed(() => {
+  if (isVideo.value)
+    return { aspectRatio: ratioCss(ratioCode.value), maxHeight: '260px', margin: '0 auto' }
+  const ar = aspectCss(model.value)
+  return ar
+    ? { height: `${props.height}px`, aspectRatio: ar, width: 'auto', margin: '0 auto' }
+    : { height: `${props.height}px` }
+})
 function onFormat(e: Event) {
   model.value = withRatio(model.value, (e.target as HTMLSelectElement).value)
 }
@@ -46,8 +51,16 @@ function pickFile(e: Event) {
   cropSrc.value = objectUrl
 }
 
-function adjustExisting() {
-  if (model.value && !isVideo.value) cropSrc.value = model.value
+async function adjustExisting() {
+  if (!model.value || isVideo.value) return
+  err.value = ''
+  try {
+    releaseUrl()
+    objectUrl = await fetchImageBlobUrl(model.value)
+    cropSrc.value = objectUrl
+  } catch (e) {
+    err.value = e instanceof Error ? e.message : 'Impossible d’ouvrir l’image pour ajustement'
+  }
 }
 
 function releaseUrl() {
@@ -75,10 +88,26 @@ async function uploadDirect(file: File | Blob, filename = 'media') {
   }
 }
 
-async function onCropConfirm(blob: Blob) {
+async function onCropConfirm(blob: Blob, ar: string) {
   cropSrc.value = null
   releaseUrl()
-  await uploadDirect(blob, 'photo.jpg')
+  busy.value = true
+  err.value = ''
+  const previous = model.value
+  const preview = URL.createObjectURL(blob)
+  model.value = preview
+  try {
+    const url = await uploadImage(blob, 'photo.jpg')
+    URL.revokeObjectURL(preview)
+    model.value = withRatio(url, ar)
+  } catch (e) {
+    URL.revokeObjectURL(preview)
+    model.value = previous
+    err.value = e instanceof Error ? e.message : 'Échec de l’envoi'
+  } finally {
+    busy.value = false
+    if (input.value) input.value.value = ''
+  }
 }
 </script>
 
@@ -86,7 +115,7 @@ async function onCropConfirm(blob: Blob) {
   <div>
     <div class="rounded-md border border-line overflow-hidden bg-nova-fog relative" :style="previewStyle">
       <VideoPlayer v-if="model && isVideo" :src="model" class="h-full w-full" />
-      <img v-else-if="model" :src="model" alt="" class="w-full h-full object-cover" />
+      <img v-else-if="model" :key="model" :src="model" alt="" class="w-full h-full object-cover" />
       <div v-else class="w-full h-full grid place-items-center text-fg-3"><NIcon name="image" :size="24" /></div>
       <div v-if="busy" class="absolute inset-0 grid place-items-center bg-black/40 text-white text-[12px]">Envoi…</div>
     </div>
