@@ -156,3 +156,59 @@
   [class*='promo-anim-'] { opacity: 1 !important; }
   .promo-marquee__track { animation: none !important; }
 }
+
+/* ----------------------------------------------------------------------------
+   Skeleton shimmer (src/components/base/NSkeleton.vue) — a soft sweeping
+   highlight over a neutral block, themed for light + dark. Used as the loading
+   state for async content sections.
+   ------------------------------------------------------------------------- */
+.nova-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-nova-cloud);
+}
+.nova-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-nova-surface) 65%, transparent),
+    transparent
+  );
+  animation: novaShimmer 1.4s ease-in-out infinite;
+}
+@keyframes novaShimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nova-skeleton::after { animation: none; }
+}
+
+/* ----------------------------------------------------------------------------
+   Boot splash (index.html #boot-loader) — shown before Vue mounts, faded out
+   from main.ts. Kept here so it themes with the design tokens.
+   ------------------------------------------------------------------------- */
+#boot-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--color-nova-paper);
+  transition: opacity 0.45s ease;
+}
+#boot-loader.is-hiding { opacity: 0; }
+.boot-spinner {
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px;
+  border: 3px solid var(--color-nova-cloud);
+  border-top-color: var(--color-nova-lime);
+  animation: bootSpin 0.8s linear infinite;
+}
+@keyframes bootSpin {
+  100% { transform: rotate(360deg); }
+}

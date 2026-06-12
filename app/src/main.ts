@@ -9,6 +9,7 @@ import { vEnter } from './directives/enter'
 import { ScrollTrigger } from './lib/gsap'
 import { useAuth } from './composables/useAuth'
 import { initTheme } from './composables/useTheme'
+import { startLoading, doneLoading } from './composables/useLoadingBar'
 
 initTheme()
 
@@ -84,6 +85,7 @@ const router = createRouter({
 
 // Auth guard: the admin area is reserved for authenticated users (Supabase).
 router.beforeEach(async (to) => {
+  startLoading()
   const { isAuthenticated, ensureSession } = useAuth()
   await ensureSession()
   if (to.meta.requiresAdmin && !isAuthenticated.value) {
@@ -99,8 +101,10 @@ router.beforeEach(async (to) => {
 // Pages load content asynchronously (services, team, portfolio…), which shifts
 // layout after triggers are created; without a refresh, some reveals never fire.
 router.afterEach(() => {
+  doneLoading()
   requestAnimationFrame(() => ScrollTrigger.refresh())
 })
+router.onError(doneLoading)
 
 const app = createApp(App)
 
@@ -110,6 +114,15 @@ app.directive('reveal', vReveal)
 app.directive('enter', vEnter)
 
 app.mount('#app')
+
+// Fade out the boot splash once the app has mounted (next frame, so the first
+// paint of real content is ready underneath).
+requestAnimationFrame(() => {
+  const boot = document.getElementById('boot-loader')
+  if (!boot) return
+  boot.classList.add('is-hiding')
+  setTimeout(() => boot.remove(), 500)
+})
 
 // Late-loading assets (fonts, images) change layout; refresh trigger positions
 // after full load so below-the-fold reveals stay accurate.

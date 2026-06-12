@@ -7,10 +7,12 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NPill from '@/components/base/NPill.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import NIcon from '@/components/base/NIcon.vue'
+import NSkeleton from '@/components/base/NSkeleton.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 
-const { items, categories, load } = usePortfolio()
+const { items, categories, loaded, load } = usePortfolio()
+const showSkeleton = computed(() => !loaded.value && !items.value.length)
 const route = useRoute()
 const router = useRouter()
 onMounted(load)
@@ -52,7 +54,18 @@ const filtered = computed(() => (cat.value === 'Tout' ? items.value : items.valu
           >{{ c }}</NPill>
         </div>
 
-        <div v-if="filtered.length" class="grid gap-[22px] grid-cols-1 tab:grid-cols-2 desk:grid-cols-3">
+        <!-- Skeleton (premier chargement, cache vide) -->
+        <div v-if="showSkeleton" class="grid gap-[22px] grid-cols-1 tab:grid-cols-2 desk:grid-cols-3">
+          <div v-for="i in 6" :key="i" class="bg-nova-surface border border-line rounded-lg overflow-hidden shadow-nova-sm">
+            <NSkeleton height="230px" radius="rounded-none" />
+            <div class="px-[18px] py-4 flex flex-col gap-2">
+              <NSkeleton width="80px" height="11px" />
+              <NSkeleton width="75%" height="22px" />
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="filtered.length" class="grid gap-[22px] grid-cols-1 tab:grid-cols-2 desk:grid-cols-3">
           <RouterLink
             v-for="(it, i) in filtered"
             :key="it.id"

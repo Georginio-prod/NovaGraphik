@@ -8,6 +8,7 @@ import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
+import NSkeleton from '@/components/base/NSkeleton.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 
@@ -24,6 +25,7 @@ const FALLBACK_ARTICLES: Article[] = [
 ]
 const { items: liveArticles, loaded, load } = useArticles()
 onMounted(load)
+const showSkeleton = computed(() => !loaded.value && !liveArticles.value.length)
 const all = computed<Article[]>(() => (loaded.value && liveArticles.value.length ? liveArticles.value : FALLBACK_ARTICLES))
 // First → featured. Next 2 → "big" cards. Rest → small cards (up to 4).
 const featured = computed<Article | undefined>(() => all.value[0])
@@ -40,8 +42,31 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3))
     />
     <section class="py-10 tab:py-14 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
+        <!-- Skeleton (premier chargement, cache vide) -->
+        <template v-if="showSkeleton">
+          <div class="grid grid-cols-1 tab:grid-cols-[1.2fr_1fr] gap-0 tab:gap-8 bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12">
+            <NSkeleton :height="isMobile ? '200px' : '320px'" radius="rounded-none" />
+            <div class="p-6 tab:py-10 tab:pr-10 flex flex-col gap-3 self-center">
+              <NSkeleton width="140px" height="14px" />
+              <NSkeleton width="85%" height="32px" />
+              <NSkeleton width="100%" height="16px" />
+              <NSkeleton width="55%" height="16px" />
+            </div>
+          </div>
+          <div class="grid gap-[22px] grid-cols-1 tab:grid-cols-2">
+            <div v-for="i in 4" :key="i" class="bg-nova-surface border border-line rounded-lg overflow-hidden">
+              <NSkeleton height="180px" radius="rounded-none" />
+              <div class="p-5 flex flex-col gap-2.5">
+                <NSkeleton width="90px" height="11px" />
+                <NSkeleton width="80%" height="22px" />
+                <NSkeleton width="100%" height="14px" />
+              </div>
+            </div>
+          </div>
+        </template>
+
         <RouterLink
-          v-if="featured"
+          v-if="featured && !showSkeleton"
           :to="`/blogs/${featured.slug}`"
           class="group grid bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12 grid-cols-1 gap-0 tab:grid-cols-[1.2fr_1fr] tab:gap-8 no-underline transition-shadow duration-nova hover:shadow-nova-md"
         >
@@ -57,7 +82,7 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3))
         </RouterLink>
 
         <div
-          v-if="ARTICLES.length > 1"
+          v-if="ARTICLES.length > 1 && !showSkeleton"
           class="grid gap-[22px] mb-[22px] grid-cols-1 tab:grid-cols-2"
         >
           <RouterLink
@@ -77,7 +102,7 @@ const ARTICLES_SM = computed<Article[]>(() => all.value.slice(3))
         </div>
 
         <div
-          v-if="ARTICLES_SM.length"
+          v-if="ARTICLES_SM.length && !showSkeleton"
           class="grid gap-[22px] grid-cols-2 tab:grid-cols-3 desk:grid-cols-4"
         >
           <RouterLink

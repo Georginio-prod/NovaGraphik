@@ -8,6 +8,28 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Archivo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <title>Nova Graphik Visu</title>
+    <!-- Boot splash styles, inlined so the loader paints before the JS bundle. -->
+    <style>
+      #boot-loader {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+        background: #f8faf9; transition: opacity 0.45s ease; font-family: 'Cormorant Garamond', Georgia, serif;
+      }
+      html.dark #boot-loader { background: #0a1519; }
+      #boot-loader.is-hiding { opacity: 0; pointer-events: none; }
+      #boot-loader .boot-word {
+        font-size: 26px; font-weight: 600; letter-spacing: 0.04em; color: #034159;
+      }
+      html.dark #boot-loader .boot-word { color: #eef4f5; }
+      #boot-loader .boot-word b { color: #0cf25d; font-style: italic; }
+      #boot-loader .boot-spinner {
+        width: 44px; height: 44px; border-radius: 9999px;
+        border: 3px solid #e6ecec; border-top-color: #0cf25d; animation: bootSpin 0.8s linear infinite;
+      }
+      html.dark #boot-loader .boot-spinner { border-color: #1e3339; border-top-color: #0cf25d; }
+      @keyframes bootSpin { 100% { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { #boot-loader .boot-spinner { animation-duration: 2s; } }
+    </style>
   </head>
   <body>
     <script>
@@ -22,6 +44,10 @@
         } catch (e) {}
       })();
     </script>
+    <div id="boot-loader">
+      <div class="boot-spinner"></div>
+      <div class="boot-word">Nova <b>Graphik</b></div>
+    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

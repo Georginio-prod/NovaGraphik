@@ -10,6 +10,7 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import NQrCode from '@/components/base/NQrCode.vue'
+import NSkeleton from '@/components/base/NSkeleton.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 
@@ -38,6 +39,9 @@ onMounted(async () => {
   setupReveal()
 })
 
+// First visit with an empty cache → show shimmer skeletons instead of flashing
+// the demo fallback while the real promotions load.
+const showSkeleton = computed(() => !loaded.value && !live.value.length)
 const all = computed<Promotion[]>(() => (loaded.value && live.value.length ? live.value : FALLBACK))
 const featured = computed<Promotion>(() => all.value.find((p) => p.featured) ?? all.value[0])
 const rest = computed<Promotion[]>(() => all.value.filter((p) => p.id !== featured.value?.id))
@@ -89,10 +93,33 @@ onBeforeUnmount(() => observer?.disconnect())
 
     <section class="py-10 tab:py-14 pb-16 tab:pb-24 bg-nova-paper">
       <NContainer>
+        <!-- Skeleton (premier chargement, cache vide) -->
+        <template v-if="showSkeleton">
+          <div class="grid grid-cols-1 tab:grid-cols-[1.25fr_1fr] gap-0 tab:gap-8 bg-nova-surface border border-line rounded-xl overflow-hidden shadow-nova-sm mb-12">
+            <NSkeleton height="360px" radius="rounded-none" />
+            <div class="p-6 tab:py-10 tab:pr-10 tab:pl-2 flex flex-col gap-3 self-center">
+              <NSkeleton width="120px" height="14px" />
+              <NSkeleton width="80%" height="34px" />
+              <NSkeleton width="100%" height="16px" />
+              <NSkeleton width="60%" height="16px" />
+            </div>
+          </div>
+          <NSkeleton width="180px" height="14px" class="mb-4" />
+          <div class="flex gap-5 overflow-hidden">
+            <div v-for="i in 4" :key="i" class="w-[260px] shrink-0 bg-nova-surface border border-line rounded-lg overflow-hidden">
+              <NSkeleton height="170px" radius="rounded-none" />
+              <div class="p-4 flex flex-col gap-2">
+                <NSkeleton width="70px" height="11px" />
+                <NSkeleton width="85%" height="20px" />
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- Promo vedette (grand format) -->
         <component
           :is="featured?.slug ? RouterLink : 'div'"
-          v-if="featured"
+          v-if="featured && !showSkeleton"
           :to="featured.slug ? `/promotions/${featured.slug}` : undefined"
           data-anim
           :class="[
@@ -114,7 +141,7 @@ onBeforeUnmount(() => observer?.disconnect())
         </component>
 
         <!-- Carrousel auto-défilant des autres promotions -->
-        <div v-if="rest.length" class="mt-4">
+        <div v-if="rest.length && !showSkeleton" class="mt-4">
           <NEyebrow class="mb-4 block">Autres publications</NEyebrow>
           <div class="promo-marquee -mx-4 px-4" :style="marqueeStyle">
             <div class="promo-marquee__track gap-5">

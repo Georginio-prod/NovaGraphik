@@ -5,6 +5,7 @@ import NavBar from '@/components/layout/NavBar.vue'
 import SiteFooter from '@/components/layout/SiteFooter.vue'
 import ThemeToggle from '@/components/base/ThemeToggle.vue'
 import CursorGlow from '@/components/base/CursorGlow.vue'
+import RouteProgress from '@/components/base/RouteProgress.vue'
 import { useTheme } from '@/composables/useTheme'
 
 const route = useRoute()
@@ -16,6 +17,7 @@ useTheme()
 
 <template>
   <UApp>
+    <RouteProgress />
     <NavBar v-if="!bare" />
     <div v-if="bare" class="fixed top-5 right-5 z-[60]">
       <ThemeToggle />
