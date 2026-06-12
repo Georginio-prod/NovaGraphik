@@ -24,3 +24,11 @@ export function writeCache(key: string, value: unknown): void {
     // storage full / unavailable (private mode) — caching is best-effort
   }
 }
+
+export function invalidateCache(key: string): void {
+  try {
+    localStorage.removeItem(PREFIX + key)
+  } catch {
+    // noop
+  }
+}

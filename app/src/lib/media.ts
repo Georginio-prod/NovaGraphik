@@ -41,6 +41,20 @@ export function ratioCss(code: string): string {
   return VIDEO_FORMATS.find((f) => f.code === code)?.css || '16 / 9'
 }
 
+// CSS aspect-ratio carried by a media URL's `?ar=` tag, or '' when none.
+// Image crops bake the chosen format into the file *and* record it here so the
+// display can size its frame to match — otherwise object-cover would re-crop the
+// image back to the container's fixed shape. Handles both video format codes
+// (e.g. `16-9`) and the raw `<w>-<h>` ratios written by the image cropper.
+export function aspectCss(url: string | undefined | null): string {
+  const ar = getMediaMeta(url).ratio
+  if (!ar) return ''
+  const vf = VIDEO_FORMATS.find((f) => f.code === ar)
+  if (vf) return vf.css
+  const m = /^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/.exec(ar)
+  return m ? `${m[1]} / ${m[2]}` : ''
+}
+
 // A <video> with preload="metadata" shows a black box until played. Appending a
 // `#t=` media fragment makes the browser render that frame as a poster. Used at
 // render time only (never re-parsed for the format), so it keeps `?ar=` intact.
