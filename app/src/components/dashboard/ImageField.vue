@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { uploadImage } from '@/composables/useUpload'
+import { fetchImageBlobUrl } from '@/lib/imageCrop'
+import { withRatio, aspectCss } from '@/lib/media'
 import NIcon from '@/components/base/NIcon.vue'
 import ImageCropper from './ImageCropper.vue'
 
 const model = defineModel<string>({ default: '' })
-withDefaults(defineProps<{ height?: number; aspect?: number; round?: boolean; lockFormat?: boolean }>(), {
-  height: 140,
-  round: false,
-  lockFormat: false,
+const props = withDefaults(
+  defineProps<{ height?: number; aspect?: number; round?: boolean; lockFormat?: boolean }>(),
+  { height: 140, round: false, lockFormat: false },
+)
+
+// Frame the preview to the cropped format (carried on the URL as `?ar=`) so the
+// dashboard shows the exact shape the visitor will see; legacy images without a
+// tag keep the fixed-height box.
+const previewStyle = computed(() => {
+  const ar = aspectCss(model.value)
+  return ar
+    ? { height: `${props.height}px`, aspectRatio: ar, width: 'auto', margin: '0 auto' }
+    : { height: `${props.height}px` }
 })
 
 const busy = ref(false)
@@ -28,8 +39,16 @@ function pickFile(e: Event) {
   cropSrc.value = objectUrl
 }
 
-function adjustExisting() {
-  if (model.value) cropSrc.value = model.value
+async function adjustExisting() {
+  if (!model.value) return
+  err.value = ''
+  try {
+    releaseUrl()
+    objectUrl = await fetchImageBlobUrl(model.value)
+    cropSrc.value = objectUrl
+  } catch (e) {
+    err.value = e instanceof Error ? e.message : 'Impossible d’ouvrir l’image pour ajustement'
+  }
 }
 
 function releaseUrl() {
@@ -45,14 +64,21 @@ function closeCropper() {
   if (input.value) input.value.value = ''
 }
 
-async function onCropConfirm(blob: Blob) {
+async function onCropConfirm(blob: Blob, ar: string) {
   cropSrc.value = null
   releaseUrl()
   busy.value = true
   err.value = ''
+  const previous = model.value
+  const preview = URL.createObjectURL(blob)
+  model.value = preview
   try {
-    model.value = await uploadImage(blob, 'photo.jpg')
+    const url = await uploadImage(blob, 'photo.jpg')
+    URL.revokeObjectURL(preview)
+    model.value = withRatio(url, ar)
   } catch (e) {
+    URL.revokeObjectURL(preview)
+    model.value = previous
     err.value = e instanceof Error ? e.message : 'Échec de l’envoi'
   } finally {
     busy.value = false
@@ -63,8 +89,8 @@ async function onCropConfirm(blob: Blob) {
 
 <template>
   <div>
-    <div class="rounded-md border border-line overflow-hidden bg-nova-fog relative" :style="{ height: height + 'px' }">
-      <img v-if="model" :src="model" alt="" class="w-full h-full object-cover" />
+    <div class="rounded-md border border-line overflow-hidden bg-nova-fog relative" :style="previewStyle">
+      <img v-if="model" :key="model" :src="model" alt="" class="w-full h-full object-cover" />
       <div v-else class="w-full h-full grid place-items-center text-fg-3"><NIcon name="image" :size="24" /></div>
       <div v-if="busy" class="absolute inset-0 grid place-items-center bg-black/30 text-white text-[12px]">Envoi…</div>
     </div>

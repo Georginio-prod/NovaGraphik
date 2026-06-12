@@ -12,7 +12,15 @@ const props = withDefaults(
   defineProps<{ src: string; aspect?: number; round?: boolean; output?: number; lockFormat?: boolean }>(),
   { round: false, output: 1920, lockFormat: false },
 )
-const emit = defineEmits<{ (e: 'confirm', blob: Blob): void; (e: 'cancel'): void }>()
+const emit = defineEmits<{ (e: 'confirm', blob: Blob, ar: string): void; (e: 'cancel'): void }>()
+
+// Reduce output dimensions to a compact `<w>-<h>` ratio tag stored on the URL so
+// the display can frame the image at the exact format it was cropped to.
+function ratioTag(w: number, h: number): string {
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
+  const g = gcd(w, h) || 1
+  return `${Math.round(w / g)}-${Math.round(h / g)}`
+}
 
 const VIEW_W = 320
 
@@ -25,6 +33,7 @@ const tx = ref(0)
 const ty = ref(0)
 const ready = ref(false)
 const working = ref(false)
+const cropErr = ref('')
 
 // Selected output aspect: a number, or null = the image's natural ratio (free).
 // Round avatars force a square; otherwise we honour any aspect the caller passed,
@@ -127,8 +136,14 @@ const imgStyle = computed(() => ({
   transformOrigin: '0 0',
 }))
 
+function finishExport(err?: string) {
+  working.value = false
+  if (err) cropErr.value = err
+}
+
 function confirm() {
   if (!imgEl.value || working.value) return
+  cropErr.value = ''
   working.value = true
   const sx = -tx.value / scale.value
   const sy = -ty.value / scale.value
@@ -138,28 +153,42 @@ function confirm() {
   const long = Math.min(props.output, Math.max(sw, sh))
   const outW = effAspect.value >= 1 ? long : Math.round(long * effAspect.value)
   const outH = effAspect.value >= 1 ? Math.round(long / effAspect.value) : long
+  if (!Number.isFinite(outW) || !Number.isFinite(outH) || outW < 1 || outH < 1) {
+    finishExport('Dimensions d’export invalides.')
+    return
+  }
   const canvas = document.createElement('canvas')
   canvas.width = outW
   canvas.height = outH
   const ctx = canvas.getContext('2d')
   if (!ctx) {
-    working.value = false
+    finishExport('Export impossible dans ce navigateur.')
     return
   }
-  // Fill white first so any letterbox margins (when zoomed out past cover) export
-  // as a clean white background rather than black (JPEG has no transparency).
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, outW, outH)
-  ctx.imageSmoothingQuality = 'high'
-  ctx.drawImage(imgEl.value, sx, sy, sw, sh, 0, 0, outW, outH)
-  canvas.toBlob(
-    (b) => {
-      working.value = false
-      if (b) emit('confirm', b)
-    },
-    'image/jpeg',
-    0.9,
-  )
+  try {
+    // Fill white first so any letterbox margins (when zoomed out past cover) export
+    // as a clean white background rather than black (JPEG has no transparency).
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, outW, outH)
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(imgEl.value, sx, sy, sw, sh, 0, 0, outW, outH)
+    canvas.toBlob(
+      (b) => {
+        if (b) {
+          working.value = false
+          emit('confirm', b, ratioTag(outW, outH))
+        } else {
+          finishExport(
+            'Export refusé par le navigateur. Réouvrez l’ajustement ou téléversez à nouveau le fichier.',
+          )
+        }
+      },
+      'image/jpeg',
+      0.9,
+    )
+  } catch {
+    finishExport('Export refusé par le navigateur. Réouvrez l’ajustement ou téléversez à nouveau le fichier.')
+  }
 }
 </script>
 
@@ -202,6 +231,7 @@ function confirm() {
           ref="imgEl"
           :src="src"
           alt=""
+          crossorigin="anonymous"
           class="pointer-events-none absolute left-0 top-0 max-w-none"
           :style="imgStyle"
           @load="onImgLoad"
@@ -232,6 +262,8 @@ function confirm() {
         />
         <NIcon name="plus" :size="15" class="text-fg-3" />
       </div>
+
+      <p v-if="cropErr" class="mt-4 text-[12px] leading-snug text-err">{{ cropErr }}</p>
 
       <div class="mt-5 flex justify-end gap-2.5">
         <button
