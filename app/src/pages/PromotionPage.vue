@@ -3,13 +3,11 @@ import { computed, onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { usePromotions } from '@/composables/useEditable'
 import { animationClass } from '@/lib/promoAnimations'
-import { promoUrl } from '@/lib/site'
 import type { Promotion } from '@/lib/api'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import NPlaceholder from '@/components/base/NPlaceholder.vue'
-import NQrCode from '@/components/base/NQrCode.vue'
 import NSkeleton from '@/components/base/NSkeleton.vue'
 import PageBanner from '@/components/sections/PageBanner.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
@@ -45,10 +43,6 @@ const showSkeleton = computed(() => !loaded.value && !live.value.length)
 const all = computed<Promotion[]>(() => (loaded.value && live.value.length ? live.value : FALLBACK))
 const featured = computed<Promotion>(() => all.value.find((p) => p.featured) ?? all.value[0])
 const rest = computed<Promotion[]>(() => all.value.filter((p) => p.id !== featured.value?.id))
-// Promotions porteuses d'un QR code : lien explicite, ou (à défaut) la page de la
-// promo sur le site, pour qu'un scan mène toujours quelque part d'utile.
-const withQr = computed<Promotion[]>(() => all.value.filter((p) => p.qr_target?.trim() || p.slug))
-const qrFor = (p: Promotion) => p.qr_target?.trim() || promoUrl(p.slug)
 
 // Constant, slow speed: scale the loop duration with the item count so adding
 // more publications never makes the marquee faster.
@@ -169,32 +163,6 @@ onBeforeUnmount(() => observer?.disconnect())
                   </div>
                 </component>
               </template>
-            </div>
-          </div>
-        </div>
-      </NContainer>
-    </section>
-
-    <!-- Section QR codes — générés côté client à partir du lien de chaque promo -->
-    <section v-if="withQr.length" class="py-12 tab:py-16 bg-nova-fog border-t border-line">
-      <NContainer>
-        <div class="text-center mb-8">
-          <NEyebrow class="block">Scannez & découvrez</NEyebrow>
-          <h2 class="font-display text-[30px] tab:text-[36px] font-semibold mt-2 text-fg-1">QR codes des promotions</h2>
-          <p class="text-[14px] text-fg-3 mt-2 max-w-[560px] mx-auto">
-            Scannez un code avec votre téléphone pour accéder directement à l'offre correspondante.
-          </p>
-        </div>
-        <div class="grid gap-6 grid-cols-2 tab:grid-cols-3 desk:grid-cols-4 justify-items-center">
-          <div
-            v-for="p in withQr"
-            :key="`qr-${p.id}`"
-            class="flex flex-col items-center text-center bg-nova-surface border border-line rounded-lg p-5 shadow-nova-xs w-full max-w-[220px]"
-          >
-            <NQrCode :value="qrFor(p)" :size="160" />
-            <div class="mt-3.5">
-              <NEyebrow class="text-[9.5px]">{{ p.category }}</NEyebrow>
-              <h3 class="font-sans text-[14.5px] font-semibold mt-1 leading-snug text-fg-1">{{ p.title }}</h3>
             </div>
           </div>
         </div>
