@@ -9,6 +9,7 @@ import type {
   Testimonial,
   PricingItem,
   PricingFormula,
+  Promotion,
 } from '@/lib/api'
 
 /**
@@ -43,3 +44,4 @@ export const usePartners = makeLoader<Partner>('/partners')
 export const useTestimonials = makeLoader<Testimonial>('/testimonials')
 export const usePricingItems = makeLoader<PricingItem>('/pricing-items')
 export const usePricingFormulas = makeLoader<PricingFormula>('/pricing-formulas')
+export const usePromotions = makeLoader<Promotion>('/promotions')

@@ -7,6 +7,8 @@ const CARDS: [string, string, string, string][] = [
   ['file-text', 'Pages', 'Sections de la page d’accueil', '/admin/pages'],
   ['image', 'Portfolios', 'Réalisations & catégories', '/admin/portfolio'],
   ['users', 'Équipe', 'Membres & organigramme', '/admin/team'],
+  ['megaphone', 'Promotions', 'Publications mises en avant', '/admin/promotions'],
+  ['inbox', 'Commandes', 'Commandes via code promo', '/admin/commandes'],
   ['settings', 'Réglages', 'Contact & réseaux sociaux', '/admin/settings'],
 ]
 </script>

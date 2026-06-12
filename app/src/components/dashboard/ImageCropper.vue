@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, nextTick } from 'vue'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
+import { IMAGE_FORMATS, type ImageFormat } from '@/lib/imageFormats'
 
-// In-browser crop / reframe + downscale. The user pans and zooms to frame the
-// subject (e.g. a face), then we render the visible region to a canvas and emit
-// a downscaled JPEG Blob — which also keeps uploads well under the server limit.
+// In-browser crop / reframe + downscale. The user picks an output format (free,
+// square, 16:9, A4…), pans and zooms to frame the subject, then we render the
+// visible region to a canvas and emit a downscaled JPEG Blob — which also keeps
+// uploads well under the server limit.
 const props = withDefaults(
-  defineProps<{ src: string; aspect?: number; round?: boolean; output?: number }>(),
-  { round: false, output: 1920 },
+  defineProps<{ src: string; aspect?: number; round?: boolean; output?: number; lockFormat?: boolean }>(),
+  { round: false, output: 1920, lockFormat: false },
 )
 const emit = defineEmits<{ (e: 'confirm', blob: Blob): void; (e: 'cancel'): void }>()
 
@@ -18,31 +20,66 @@ const imgEl = ref<HTMLImageElement | null>(null)
 const nat = reactive({ w: 0, h: 0 })
 const scale = ref(1)
 const minScale = ref(1)
+const coverScale = ref(1)
 const tx = ref(0)
 const ty = ref(0)
 const ready = ref(false)
 const working = ref(false)
 
-const effAspect = computed(() =>
-  props.aspect && props.aspect > 0 ? props.aspect : nat.w && nat.h ? nat.w / nat.h : 1,
-)
+// Selected output aspect: a number, or null = the image's natural ratio (free).
+// Round avatars force a square; otherwise we honour any aspect the caller passed,
+// falling back to free. The picker (below) lets the user change it on the fly.
+const chosenAspect = ref<number | null>(props.round ? 1 : props.aspect && props.aspect > 0 ? props.aspect : null)
+const showPicker = computed(() => !props.round && !props.lockFormat)
+
+const effAspect = computed(() => {
+  const a = chosenAspect.value
+  if (a && a > 0) return a
+  return nat.w && nat.h ? nat.w / nat.h : 1
+})
 const viewH = computed(() => Math.round(VIEW_W / effAspect.value))
-const maxScale = computed(() => minScale.value * 4)
+// Zoom range runs from "contain" (whole image visible, letterboxed) up to 4× the
+// "cover" scale, so the user can pull the image fully into frame or push in close.
+const maxScale = computed(() => coverScale.value * 4)
+
+function isActiveFormat(f: ImageFormat): boolean {
+  const a = chosenAspect.value
+  if (f.aspect === null) return a === null
+  return a !== null && Math.abs(a - f.aspect) < 1e-4
+}
+function pickFormat(f: ImageFormat) {
+  chosenAspect.value = f.aspect
+  // effAspect (and viewH) recompute synchronously; reframe once the DOM settles.
+  nextTick(recompute)
+}
+function recompute() {
+  if (!ready.value || !nat.w || !nat.h) return
+  // contain = whole image fits (min zoom); cover = fills the frame (start here,
+  // matching the previous default). The user can now zoom out down to contain.
+  minScale.value = Math.min(VIEW_W / nat.w, viewH.value / nat.h)
+  coverScale.value = Math.max(VIEW_W / nat.w, viewH.value / nat.h)
+  scale.value = coverScale.value
+  tx.value = (VIEW_W - nat.w * scale.value) / 2
+  ty.value = (viewH.value - nat.h * scale.value) / 2
+  clamp()
+}
 
 function clamp() {
-  tx.value = Math.min(0, Math.max(VIEW_W - nat.w * scale.value, tx.value))
-  ty.value = Math.min(0, Math.max(viewH.value - nat.h * scale.value, ty.value))
+  // Per axis: if the image is larger than the frame, keep it covering (pan within
+  // the overflow). If it's smaller (zoomed out past cover), centre it so the
+  // letterboxing is symmetric instead of pinning it to a corner.
+  const ox = VIEW_W - nat.w * scale.value
+  const oy = viewH.value - nat.h * scale.value
+  tx.value = ox >= 0 ? ox / 2 : Math.min(0, Math.max(ox, tx.value))
+  ty.value = oy >= 0 ? oy / 2 : Math.min(0, Math.max(oy, ty.value))
 }
 
 function onImgLoad() {
   const im = imgEl.value!
   nat.w = im.naturalWidth
   nat.h = im.naturalHeight
-  minScale.value = Math.max(VIEW_W / nat.w, viewH.value / nat.h)
-  scale.value = minScale.value
-  tx.value = (VIEW_W - nat.w * scale.value) / 2
-  ty.value = (viewH.value - nat.h * scale.value) / 2
   ready.value = true
+  recompute()
 }
 
 function setZoom(v: number) {
@@ -109,6 +146,10 @@ function confirm() {
     working.value = false
     return
   }
+  // Fill white first so any letterbox margins (when zoomed out past cover) export
+  // as a clean white background rather than black (JPEG has no transparency).
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, outW, outH)
   ctx.imageSmoothingQuality = 'high'
   ctx.drawImage(imgEl.value, sx, sy, sw, sh, 0, 0, outW, outH)
   canvas.toBlob(
@@ -126,9 +167,27 @@ function confirm() {
   <div class="fixed inset-0 z-[80] grid place-items-center bg-black/55 p-2 tab:p-4" @pointerup="onUp">
     <div class="w-full max-w-[380px] rounded-xl bg-nova-surface p-4 tab:p-5 shadow-nova-lg">
       <h3 class="mb-1 font-display text-lg font-semibold text-fg-1">Ajuster l'image</h3>
-      <p class="mb-4 text-[12.5px] leading-snug text-fg-3">
-        Glissez pour déplacer, utilisez le curseur pour zoomer et cadrer le visage.
+      <p class="mb-3 text-[12.5px] leading-snug text-fg-3">
+        {{ round
+          ? 'Glissez pour déplacer, utilisez le curseur pour zoomer et cadrer le visage.'
+          : 'Choisissez un format, glissez pour déplacer et zoomez pour cadrer.' }}
       </p>
+
+      <!-- format picker -->
+      <div v-if="showPicker" class="mb-3 flex flex-wrap gap-1.5">
+        <button
+          v-for="f in IMAGE_FORMATS"
+          :key="f.key"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-[11.5px] font-semibold transition-[border-color,background,color] duration-nova"
+          :class="isActiveFormat(f)
+            ? 'border-nova-teal bg-nova-teal/10 text-nova-teal'
+            : 'border-line text-fg-2 hover:border-nova-teal/60'"
+          @click="pickFormat(f)"
+        >
+          <NIcon :name="f.icon" :size="13" />{{ f.label }}
+        </button>
+      </div>
 
       <!-- viewport -->
       <div

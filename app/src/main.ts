@@ -12,12 +12,20 @@ import { initTheme } from './composables/useTheme'
 
 initTheme()
 
+// Take scroll control away from the browser: native "auto" restoration + scroll
+// anchoring re-position the viewport when a route renders synchronously (e.g.
+// pages hydrated from cache), which overrides scrollBehavior and leaves the user
+// part-way down the new page. With "manual", scrollBehavior is the single source.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: () => import('./pages/HomePage.vue') },
     { path: '/portfolios', name: 'portfolios', component: () => import('./pages/PortfolioPage.vue') },
     { path: '/blogs', name: 'blogs', component: () => import('./pages/BlogPage.vue') },
+    { path: '/promotions', name: 'promotions', component: () => import('./pages/PromotionPage.vue') },
+    { path: '/promotions/:slug', name: 'promotion', component: () => import('./pages/PromotionDetailPage.vue') },
     { path: '/blogs/:slug', name: 'article', component: () => import('./pages/BlogArticlePage.vue') },
     { path: '/contact', name: 'contact', component: () => import('./pages/ContactPage.vue') },
     { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue') },
@@ -37,6 +45,8 @@ const router = createRouter({
         { path: 'portfolio', name: 'dash-portfolio', component: () => import('./pages/dashboard/DashboardPortfolio.vue') },
         { path: 'team', name: 'dash-team', component: () => import('./pages/dashboard/DashboardTeam.vue') },
         { path: 'blogs', name: 'dash-blogs', component: () => import('./pages/dashboard/DashboardArticles.vue') },
+        { path: 'promotions', name: 'dash-promotions', component: () => import('./pages/dashboard/DashboardPromotions.vue') },
+        { path: 'commandes', name: 'dash-commandes', component: () => import('./pages/dashboard/DashboardOrders.vue') },
         { path: 'partenaires', name: 'dash-partenaires', component: () => import('./pages/dashboard/DashboardPartners.vue') },
         { path: 'tarifs', name: 'dash-tarifs', component: () => import('./pages/dashboard/DashboardPricing.vue') },
         { path: 'navigation', name: 'dash-navigation', component: () => import('./pages/dashboard/DashboardNavigation.vue') },
@@ -46,7 +56,7 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior(to) {
+  scrollBehavior(to, _from, savedPosition) {
     // Anchor links (e.g. /#equipe) scroll to the target. The element may render
     // after async content loads, so poll briefly until it exists.
     if (to.hash) {
@@ -62,7 +72,13 @@ const router = createRouter({
         tryScroll()
       })
     }
-    return { top: 0 }
+    // Back/forward: restore where the user was. Otherwise go to the top — but
+    // wait two frames so a synchronously-rendered page (and any scroll-anchoring
+    // it triggers) has settled, then our scroll is the last word, not the first.
+    const target = savedPosition || { top: 0, left: 0 }
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(target)))
+    })
   },
 })
 
@@ -105,6 +121,8 @@ const prefetchRoutes = () => {
   void import('./pages/PortfolioPage.vue')
   void import('./pages/ProjectPage.vue')
   void import('./pages/BlogPage.vue')
+  void import('./pages/PromotionPage.vue')
+  void import('./pages/PromotionDetailPage.vue')
   void import('./pages/ContactPage.vue')
   void import('./pages/PartnersPage.vue')
   void import('./pages/PricingPage.vue')

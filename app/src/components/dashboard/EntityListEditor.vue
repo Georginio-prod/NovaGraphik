@@ -5,15 +5,24 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import IconPicker from '@/components/dashboard/IconPicker.vue'
 import ImageField from '@/components/dashboard/ImageField.vue'
+import QrField from '@/components/dashboard/QrField.vue'
+import PromoCodesField from '@/components/dashboard/PromoCodesField.vue'
 
 type Field = {
   key: string
   label: string
-  type?: 'text' | 'textarea' | 'icon' | 'image' | 'url' | 'list' | 'bool'
+  type?: 'text' | 'textarea' | 'icon' | 'image' | 'url' | 'list' | 'bool' | 'select' | 'qr' | 'codes'
   placeholder?: string
   rows?: number
   /** When the field type === 'list', show this label above */
   itemLabel?: string
+  /** When the field type === 'select', the choices to offer */
+  options?: { value: string; label: string }[]
+  /** Forwarded to ImageField for type === 'image' */
+  aspect?: number
+  round?: boolean
+  /** Hide the format picker in the cropper (type === 'image') */
+  lockFormat?: boolean
 }
 
 const props = defineProps<{
@@ -198,7 +207,17 @@ function removeFromList(field: string, i: number) {
       <template v-for="f in fields" :key="f.key">
         <label :class="labelClass">{{ f.label }}</label>
         <div v-if="f.type === 'icon'" class="mt-2"><IconPicker v-model="cur[f.key]" @update:model-value="onEdit" /></div>
-        <div v-else-if="f.type === 'image'" class="mt-2"><ImageField v-model="cur[f.key]" :height="140" @update:model-value="onEdit" /></div>
+        <div v-else-if="f.type === 'qr'" class="mt-2"><QrField v-model="cur[f.key]" :placeholder="f.placeholder" @update:model-value="onEdit" /></div>
+        <div v-else-if="f.type === 'codes'" class="mt-2"><PromoCodesField v-model="cur[f.key]" :seed="cur.title" @update:model-value="onEdit" /></div>
+        <div v-else-if="f.type === 'image'" class="mt-2"><ImageField v-model="cur[f.key]" :height="140" :aspect="f.aspect" :round="f.round" :lock-format="f.lockFormat" @update:model-value="onEdit" /></div>
+        <select
+          v-else-if="f.type === 'select'"
+          v-model="cur[f.key]"
+          :class="inputClass"
+          @change="onEdit"
+        >
+          <option v-for="o in f.options || []" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
         <input
           v-else-if="f.type === 'url'"
           v-model="cur[f.key]"

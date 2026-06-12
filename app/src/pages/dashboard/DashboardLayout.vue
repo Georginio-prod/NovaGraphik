@@ -15,6 +15,8 @@ const NAV: [string, string, string][] = [
   ['image', 'Portfolios', '/admin/portfolio'],
   ['users', 'Équipe', '/admin/team'],
   ['pen-line', 'Blogs', '/admin/blogs'],
+  ['megaphone', 'Promotions', '/admin/promotions'],
+  ['inbox', 'Commandes', '/admin/commandes'],
   ['award', 'Partenaires', '/admin/partenaires'],
   ['tag', 'Tarifs', '/admin/tarifs'],
   ['menu', 'Navigation', '/admin/navigation'],

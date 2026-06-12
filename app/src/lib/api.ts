@@ -43,6 +43,7 @@ const RES: Record<string, Res> = {
   testimonials: { table: 'testimonials', list: 'items', item: 'item' },
   'pricing-items': { table: 'pricing_items', list: 'items', item: 'item' },
   'pricing-formulas': { table: 'pricing_formulas', list: 'items', item: 'item' },
+  promotions: { table: 'promotions', list: 'items', item: 'item', slugFrom: 'title' },
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -320,4 +321,47 @@ export interface PricingFormula {
   is_hot: number
   position: number
   visible: number
+}
+
+export interface PromoCode {
+  code: string
+  label: string
+  discount: string
+  description: string
+}
+
+export interface Promotion {
+  id: number
+  title: string
+  slug: string
+  category: string
+  body: string
+  image: string
+  link_url: string
+  animation: string
+  featured: number
+  qr_target: string
+  subtitle: string
+  details: string
+  conditions: string
+  merchant_name: string
+  merchant_email: string
+  valid_until: string
+  codes: PromoCode[]
+  position: number
+  visible: number
+}
+
+export interface Order {
+  id: number
+  promotion_id: number | null
+  promotion_title: string
+  promo_code: string
+  offer_label: string
+  customer_name: string
+  customer_email: string
+  customer_phone: string
+  message: string
+  status: string
+  created_at: string
 }

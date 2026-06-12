@@ -13,6 +13,8 @@ import {
   Briefcase, Star, Heart, Award, Zap, Layers, PenTool, Globe, Rocket,
   Lightbulb, Megaphone, Film, Video, Smartphone, ShoppingBag, TrendingUp,
   Compass, Target, Gem, Crown, Brush, ShieldCheck, Pencil, Wand2,
+  Maximize, Square, RectangleHorizontal, RectangleVertical, File as FileIcon,
+  Download, RefreshCw, Inbox, Calendar, Copy,
 } from '@lucide/vue'
 import { Instagram, Facebook, Youtube, Tiktok } from './socialIcons'
 
@@ -83,6 +85,16 @@ export const ICONS: Record<string, Component> = {
   'shield-check': ShieldCheck,
   'pencil': Pencil,
   'wand-2': Wand2,
+  'maximize': Maximize,
+  'square': Square,
+  'rectangle-horizontal': RectangleHorizontal,
+  'rectangle-vertical': RectangleVertical,
+  'file': FileIcon,
+  'download': Download,
+  'refresh-cw': RefreshCw,
+  'inbox': Inbox,
+  'calendar': Calendar,
+  'copy': Copy,
 }
 
 export type IconName = keyof typeof ICONS

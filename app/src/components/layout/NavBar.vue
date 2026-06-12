@@ -14,6 +14,7 @@ const FALLBACK_NAV: { label: string; path: string }[] = [
   { label: 'Accueil', path: '/' },
   { label: 'Portfolios', path: '/portfolios' },
   { label: 'Blogs', path: '/blogs' },
+  { label: 'Promotions', path: '/promotions' },
   { label: 'Contact', path: '/contact' },
   { label: 'Partenaires', path: '/partenaires' },
   { label: 'Grille tarifaire', path: '/grille-tarifaire' },

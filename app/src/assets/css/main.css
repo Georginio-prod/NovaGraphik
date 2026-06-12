@@ -113,3 +113,46 @@
 /* Scroll reveals and entrance animations are now driven by GSAP
    (see src/lib/gsap.ts and src/directives/{reveal,enter}.ts), which honours
    prefers-reduced-motion by skipping the tweens entirely. */
+
+/* ----------------------------------------------------------------------------
+   Promotions — predefined entrance animations (src/lib/promoAnimations.ts) and
+   the auto-scrolling carousel marquee. The admin assigns one promo-anim-* class
+   per publication; cards run their keyframes when revealed (.is-in toggled by an
+   IntersectionObserver in PromotionPage). prefers-reduced-motion neutralises all
+   of it via the @media rule in @layer base above.
+   ------------------------------------------------------------------------- */
+[class*='promo-anim-'] {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.promo-anim-fade.is-in { animation: promoFade 0.7s var(--ease-nova) both; }
+.promo-anim-rise.is-in { animation: promoRise 0.7s var(--ease-nova) both; }
+.promo-anim-slide-left.is-in { animation: promoSlideLeft 0.7s var(--ease-nova) both; }
+.promo-anim-slide-right.is-in { animation: promoSlideRight 0.7s var(--ease-nova) both; }
+.promo-anim-zoom.is-in { animation: promoZoom 0.7s var(--ease-nova) both; }
+.promo-anim-flip.is-in { animation: promoFlip 0.8s var(--ease-nova) both; }
+.promo-anim-pop.is-in { animation: promoPop 0.7s cubic-bezier(0.18, 1.3, 0.5, 1) both; }
+
+@keyframes promoFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes promoRise { from { opacity: 0; transform: translateY(38px) } to { opacity: 1; transform: none } }
+@keyframes promoSlideLeft { from { opacity: 0; transform: translateX(-56px) } to { opacity: 1; transform: none } }
+@keyframes promoSlideRight { from { opacity: 0; transform: translateX(56px) } to { opacity: 1; transform: none } }
+@keyframes promoZoom { from { opacity: 0; transform: scale(0.86) } to { opacity: 1; transform: none } }
+@keyframes promoFlip { from { opacity: 0; transform: perspective(900px) rotateY(34deg) } to { opacity: 1; transform: none } }
+@keyframes promoPop { 0% { opacity: 0; transform: scale(0.7) } 60% { opacity: 1; transform: scale(1.05) } 100% { transform: scale(1) } }
+
+/* Seamless, slow, non-accelerating marquee for the secondary promotions. The
+   track holds two copies of the list; translating by -50% loops invisibly. */
+.promo-marquee { overflow: hidden; }
+.promo-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: promoMarquee var(--promo-marquee-duration, 40s) linear infinite;
+}
+.promo-marquee:hover .promo-marquee__track { animation-play-state: paused; }
+@keyframes promoMarquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+
+@media (prefers-reduced-motion: reduce) {
+  [class*='promo-anim-'] { opacity: 1 !important; }
+  .promo-marquee__track { animation: none !important; }
+}

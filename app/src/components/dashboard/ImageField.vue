@@ -5,9 +5,10 @@ import NIcon from '@/components/base/NIcon.vue'
 import ImageCropper from './ImageCropper.vue'
 
 const model = defineModel<string>({ default: '' })
-withDefaults(defineProps<{ height?: number; aspect?: number; round?: boolean }>(), {
+withDefaults(defineProps<{ height?: number; aspect?: number; round?: boolean; lockFormat?: boolean }>(), {
   height: 140,
   round: false,
+  lockFormat: false,
 })
 
 const busy = ref(false)
@@ -93,6 +94,7 @@ async function onCropConfirm(blob: Blob) {
       :src="cropSrc"
       :aspect="aspect"
       :round="round"
+      :lock-format="lockFormat"
       @confirm="onCropConfirm"
       @cancel="closeCropper"
     />
