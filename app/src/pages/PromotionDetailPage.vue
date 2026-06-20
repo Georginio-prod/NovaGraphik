@@ -14,11 +14,19 @@ import NPlaceholder from '@/components/base/NPlaceholder.vue'
 import NQrCode from '@/components/base/NQrCode.vue'
 import PhoneInput from '@/components/base/PhoneInput.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
+import { useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
 const promo = ref<Promotion | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
+
+useSeo({
+  title: () => promo.value?.title,
+  description: () => promo.value?.subtitle || promo.value?.details || undefined,
+  image: () => promo.value?.image || undefined,
+  noindex: () => notFound.value,
+})
 
 const codes = computed<PromoCode[]>(() => (promo.value?.codes || []).filter((c) => c.code))
 // QR code: the explicit target if set, otherwise this promotion's page on the

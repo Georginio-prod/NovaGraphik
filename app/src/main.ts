@@ -2,6 +2,7 @@ import './assets/css/main.css'
 
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import { createHead } from '@unhead/vue/client'
 import ui from '@nuxt/ui/vue-plugin'
 import App from './App.vue'
 import { vReveal } from './directives/reveal'
@@ -22,23 +23,25 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', name: 'home', component: () => import('./pages/HomePage.vue') },
-    { path: '/portfolios', name: 'portfolios', component: () => import('./pages/PortfolioPage.vue') },
-    { path: '/blogs', name: 'blogs', component: () => import('./pages/BlogPage.vue') },
-    { path: '/promotions', name: 'promotions', component: () => import('./pages/PromotionPage.vue') },
+    // `seo` drives the default <title>/description per route (applied globally
+    // in App.vue). Dynamic pages (:slug) override it once their content loads.
+    { path: '/', name: 'home', component: () => import('./pages/HomePage.vue'), meta: { seo: { title: '', description: 'Nova Graphik Visu, agence de communication visuelle : identité de marque, supports imprimés, motion design, 3D, photo et sites web sur mesure.' } } },
+    { path: '/portfolios', name: 'portfolios', component: () => import('./pages/PortfolioPage.vue'), meta: { seo: { title: 'Portfolio', description: 'Découvrez les réalisations de Nova Graphik Visu : identités visuelles, supports print, motion design, 3D et sites web.' } } },
+    { path: '/blogs', name: 'blogs', component: () => import('./pages/BlogPage.vue'), meta: { seo: { title: 'Blog', description: 'Conseils, tendances et coulisses du design et de la communication visuelle par Nova Graphik Visu.' } } },
+    { path: '/promotions', name: 'promotions', component: () => import('./pages/PromotionPage.vue'), meta: { seo: { title: 'Promotions', description: 'Profitez des offres et promotions en cours sur les services de Nova Graphik Visu.' } } },
     { path: '/promotions/:slug', name: 'promotion', component: () => import('./pages/PromotionDetailPage.vue') },
     { path: '/blogs/:slug', name: 'article', component: () => import('./pages/BlogArticlePage.vue') },
-    { path: '/contact', name: 'contact', component: () => import('./pages/ContactPage.vue') },
-    { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue') },
-    { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue') },
-    { path: '/site-web-vtc', name: 'vtc', component: () => import('./pages/VtcPage.vue') },
+    { path: '/contact', name: 'contact', component: () => import('./pages/ContactPage.vue'), meta: { seo: { title: 'Contact', description: 'Contactez Nova Graphik Visu pour votre projet de communication visuelle, design graphique ou site web.' } } },
+    { path: '/partenaires', name: 'partenaires', component: () => import('./pages/PartnersPage.vue'), meta: { seo: { title: 'Partenaires', description: 'Ils nous font confiance : les partenaires et clients de Nova Graphik Visu.' } } },
+    { path: '/grille-tarifaire', name: 'tarifs', component: () => import('./pages/PricingPage.vue'), meta: { seo: { title: 'Grille tarifaire', description: 'Découvrez les formules et tarifs de Nova Graphik Visu pour vos projets de design et communication.' } } },
+    { path: '/site-web-vtc', name: 'vtc', component: () => import('./pages/VtcPage.vue'), meta: { seo: { title: 'Site web pour VTC', description: 'Création de sites web professionnels pour chauffeurs VTC par Nova Graphik Visu : réservation, image de marque et visibilité.' } } },
     { path: '/equipe/:slug', name: 'member', component: () => import('./pages/MemberPage.vue') },
     { path: '/portfolio/:slug', name: 'project', component: () => import('./pages/ProjectPage.vue') },
-    { path: '/admin/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true } },
+    { path: '/admin/login', name: 'login', component: () => import('./pages/LoginPage.vue'), meta: { bare: true, seo: { noindex: true } } },
     {
       path: '/admin',
       component: () => import('./pages/dashboard/DashboardLayout.vue'),
-      meta: { bare: true, requiresAdmin: true },
+      meta: { bare: true, requiresAdmin: true, seo: { noindex: true } },
       children: [
         { path: '', name: 'dashboard', component: () => import('./pages/dashboard/DashboardOverview.vue') },
         { path: 'pages', name: 'dash-pages', component: () => import('./pages/dashboard/DashboardPages.vue') },
@@ -107,7 +110,9 @@ router.afterEach(() => {
 router.onError(doneLoading)
 
 const app = createApp(App)
+const head = createHead()
 
+app.use(head)
 app.use(router)
 app.use(ui)
 app.directive('reveal', vReveal)

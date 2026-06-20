@@ -11,11 +11,19 @@ import NIcon from '@/components/base/NIcon.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
 import MediaLightbox from '@/components/base/MediaLightbox.vue'
 import VideoPlayer from '@/components/base/VideoPlayer.vue'
+import { useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
 const item = ref<PortfolioItem | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
+
+useSeo({
+  title: () => item.value?.title,
+  description: () => item.value?.description || undefined,
+  image: () => item.value?.cover_image || undefined,
+  noindex: () => notFound.value,
+})
 const lightboxSrc = ref<string | null>(null)
 const coverFailed = ref(false)
 
