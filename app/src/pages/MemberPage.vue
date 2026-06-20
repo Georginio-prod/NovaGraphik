@@ -7,11 +7,19 @@ import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
+import { useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
 const member = ref<TeamMember | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
+
+useSeo({
+  title: () => (member.value ? `${member.value.name} — ${member.value.role}` : undefined),
+  description: () => member.value?.bio || undefined,
+  image: () => member.value?.photo || undefined,
+  noindex: () => notFound.value,
+})
 
 async function load(slug: string) {
   loading.value = true

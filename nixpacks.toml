@@ -1,12 +1,18 @@
 # Railway / Nixpacks — single STATIC frontend service (Root Directory = repo root).
 # The app talks directly to Supabase (Postgres + Storage); there is no backend.
-# Build the Vue app, then serve app/dist statically via `vite preview`.
+# Build the Vue app, prerender every route to static HTML (SEO), then serve
+# app/dist with the clean-URL static server in scripts/serve.mjs.
 #
 # Required env vars on the service:
 #   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_BUCKET=media
+#
+# Prerendering runs headless Chromium during the build. We install Chromium via
+# nix (instead of letting puppeteer download it) and point puppeteer at it.
+# If Chromium is unavailable the prerender step is skipped and the SPA still
+# ships — the build never fails because of it.
 
 [phases.setup]
-nixPkgs = ["nodejs_22"]
+nixPkgs = ["nodejs_22", "chromium"]
 
 [phases.install]
 cmds = ["npm ci"]
@@ -19,3 +25,5 @@ cmd = "npm start"
 
 [variables]
 NODE_ENV = "production"
+# Don't download Chromium during `npm ci`; prerender uses the nix-provided one.
+PUPPETEER_SKIP_DOWNLOAD = "true"

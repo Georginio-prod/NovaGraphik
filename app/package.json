@@ -8,9 +8,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "sitemap": "node ../scripts/gen-sitemap.mjs",
+    "prerender": "node ../scripts/prerender.mjs",
+    "build": "node ../scripts/gen-sitemap.mjs && vue-tsc -b && vite build && node ../scripts/prerender.mjs",
     "preview": "vite preview --host --port 4173",
-    "start": "vite preview --host --port ${PORT:-4173}"
+    "start": "node ../scripts/serve.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.17.0",

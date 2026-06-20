@@ -8,11 +8,20 @@ import NEyebrow from '@/components/base/NEyebrow.vue'
 import NButton from '@/components/base/NButton.vue'
 import NIcon from '@/components/base/NIcon.vue'
 import CtaBand from '@/components/sections/CtaBand.vue'
+import { useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
 const article = ref<Article | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
+
+useSeo({
+  type: 'article',
+  title: () => article.value?.title,
+  description: () => article.value?.excerpt || undefined,
+  image: () => article.value?.cover_image || undefined,
+  noindex: () => notFound.value,
+})
 
 const paragraphs = computed(() =>
   (article.value?.body || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean),
