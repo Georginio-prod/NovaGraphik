@@ -21,7 +21,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
 const DIST = resolve(root, 'app/dist')
 const SITE_URL = 'https://novagraphikvisu.com'
-const PORT = 5179
 
 const STATIC_ROUTES = ['/', '/portfolios', '/blogs', '/promotions', '/contact', '/partenaires', '/grille-tarifaire', '/site-web-vtc']
 
@@ -35,11 +34,13 @@ const MIME = {
 
 // Static server with SPA fallback: real assets are served from disk; any HTML
 // route falls back to the base index.html so the SPA router renders it.
+// Binds an OS-assigned ephemeral port (0) to avoid clashing with anything on
+// the build host, and resolves to the chosen port.
 function startServer() {
   const indexHtml = readFileSync(join(DIST, 'index.html'), 'utf8')
   const server = createServer((req, res) => {
     try {
-      const url = new URL(req.url, `http://localhost:${PORT}`)
+      const url = new URL(req.url, 'http://localhost')
       const file = join(DIST, decodeURIComponent(url.pathname))
       if (extname(file) && existsSync(file) && statSync(file).isFile()) {
         res.setHeader('Content-Type', MIME[extname(file)] || 'application/octet-stream')
@@ -50,7 +51,14 @@ function startServer() {
     res.setHeader('Content-Type', 'text/html')
     res.end(indexHtml)
   })
-  return new Promise((ok) => server.listen(PORT, () => ok(server)))
+  return new Promise((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      // Keep a permanent handler so a later socket error can't crash the process.
+      server.on('error', () => {})
+      resolve({ server, port: server.address().port })
+    })
+  })
 }
 
 // Routes = static marketing pages + dynamic slugs read from the built sitemap.
@@ -101,9 +109,9 @@ async function main() {
     return
   }
 
-  const server = await startServer()
+  const { server, port } = await startServer()
   const routes = collectRoutes()
-  console.log(`[prerender] ${routes.length} routes`)
+  console.log(`[prerender] ${routes.length} routes (server on :${port})`)
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -115,7 +123,7 @@ async function main() {
   for (const route of routes) {
     const page = await browser.newPage()
     try {
-      await page.goto(`http://localhost:${PORT}${route}`, { waitUntil: 'networkidle0', timeout: 30000 })
+      await page.goto(`http://127.0.0.1:${port}${route}`, { waitUntil: 'networkidle0', timeout: 30000 })
       // Wait until the app has mounted real content into #app.
       await page.waitForFunction(
         () => {
