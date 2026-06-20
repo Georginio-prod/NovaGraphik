@@ -14,7 +14,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 const LOGO = 'https://iksyoxumzctnwxeziiad.supabase.co/storage/v1/object/public/media/email-logo.png'
-const NOVA_INBOX = 'contact@novagraphik.fr'
+const NOVA_INBOX = 'contact@novagraphikvisu.com'
 const FROM = 'Nova Graphik <onboarding@resend.dev>'
 
 const esc = (s: unknown) =>

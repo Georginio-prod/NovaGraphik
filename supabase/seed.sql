@@ -38,7 +38,7 @@ on conflict (id) do update set title = excluded.title, slug = excluded.slug, cat
 insert into public.settings (key, value) values
   ('site_title', 'Nova Graphik'),
   ('tagline', 'L''essence du raffinement'),
-  ('contact_email', 'Novagraphiksat@gmail.com'),
+  ('contact_email', 'contact@novagraphikvisu.com'),
   ('contact_phone', '+228 97 99 63 46'),
   ('contact_location', 'Lomé, Togo'),
   ('social_instagram', '#'),

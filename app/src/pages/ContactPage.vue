@@ -17,7 +17,7 @@ onMounted(load)
 
 const SERVICES_OPTS = ['Identité visuelle', 'Supports imprimés', 'Réseaux sociaux', 'Motion design', '3D / 2D', 'Photo / Reportage', 'Site web (UX/UI)', 'Autre']
 const CONTACTS = computed<[string, string, string][]>(() => [
-  ['mail', 'E-mail', get('contact_email', 'Novagraphiksat@gmail.com')],
+  ['mail', 'E-mail', get('contact_email', 'contact@novagraphikvisu.com')],
   ['phone', 'Téléphone', get('contact_phone', '+228 97 99 63 46')],
   ['map-pin', 'Localisation', get('contact_location', 'Lomé, Togo')],
 ])
@@ -32,13 +32,13 @@ const socials = computed<[string, string][]>(() =>
   ).filter((s) => s[1]),
 )
 
-// Devis requests are emailed to contact@novagraphik.fr by the `send-quote`
+// Devis requests are emailed to contact@novagraphikvisu.com by the `send-quote`
 // Supabase Edge Function, which builds a branded HTML email (Nova logo + a
 // "Télécharger la pièce jointe" button) and sends it through Resend. The Resend
 // key stays server-side. Any attached file is first uploaded to Supabase Storage
 // and its download link is included in the email. If the function is ever
 // unreachable, we fall back to FormSubmit so a request is never lost.
-const DEVIS_INBOX = 'contact@novagraphik.fr'
+const DEVIS_INBOX = 'contact@novagraphikvisu.com'
 
 const sel = ref<string[]>(['Identité visuelle'])
 const sent = ref(false)
