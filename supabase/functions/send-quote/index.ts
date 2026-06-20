@@ -12,7 +12,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 const LOGO = 'https://iksyoxumzctnwxeziiad.supabase.co/storage/v1/object/public/media/email-logo.png'
-const INBOX = 'contact@novagraphik.fr'
+const INBOX = 'contact@novagraphikvisu.com'
 
 const esc = (s: unknown) =>
   String(s ?? '').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] as string))

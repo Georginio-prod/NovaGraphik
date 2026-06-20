@@ -35,7 +35,7 @@ async function subscribe() {
 }
 
 const contacts = computed<[string, string][]>(() => [
-  ['mail', get('contact_email', 'Novagraphiksat@gmail.com')],
+  ['mail', get('contact_email', 'contact@novagraphikvisu.com')],
   ['phone', get('contact_phone', '+228 97 99 63 46')],
   ['map-pin', get('contact_location', 'Lomé, Togo')],
 ])
