@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import posthog from 'posthog-js'
 import { useOrders } from '@/composables/useOrders'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
@@ -37,6 +38,16 @@ async function del(id: number) {
     selectedId.value = items.value[idx + 1]?.id ?? items.value[idx - 1]?.id ?? null
   }
   await remove(id)
+}
+async function updateStatus(id: number, previousStatus: string, nextStatus: string) {
+  if (previousStatus === nextStatus) return
+  const saved = await setStatus(id, nextStatus)
+  if (saved && posthog.__loaded) {
+    posthog.capture('admin_order_status_updated', {
+      previous_status: previousStatus,
+      next_status: nextStatus,
+    })
+  }
 }
 </script>
 
@@ -108,7 +119,7 @@ async function del(id: number) {
             :key="s.key"
             class="rounded-sm border px-3.5 py-2 text-[12.5px] font-semibold transition-[border-color,background,color] duration-nova"
             :class="cur.status === s.key ? 'border-nova-teal bg-nova-teal/10 text-nova-teal' : 'border-line text-fg-2 hover:border-nova-teal/60'"
-            @click="setStatus(cur.id, s.key)"
+            @click="updateStatus(cur.id, cur.status, s.key)"
           >
             {{ s.label }}
           </button>

@@ -48,10 +48,11 @@ export function useOrders() {
     loading.value = false
   }
 
-  async function setStatus(id: number, status: string) {
+  async function setStatus(id: number, status: string): Promise<boolean> {
     const it = items.value.find((o) => o.id === id)
     if (it) it.status = status
-    await supabase.from('orders').update({ status }).eq('id', id)
+    const { error: updateError } = await supabase.from('orders').update({ status }).eq('id', id)
+    return !updateError
   }
 
   async function remove(id: number) {

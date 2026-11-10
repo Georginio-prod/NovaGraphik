@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
+import posthog from 'posthog-js'
 import { api } from '@/lib/api'
 import { createOrder } from '@/composables/useOrders'
 import { promoUrl } from '@/lib/site'
@@ -109,6 +110,12 @@ async function submit() {
       },
       promo.value.merchant_email || '',
     )
+    if (posthog.__loaded) {
+      posthog.capture('promotion_order_submitted', {
+        promotion_id: promo.value.id,
+        has_promo_code: Boolean(selectedCode.value),
+      })
+    }
     sent.value = true
   } catch {
     sendError.value = "L'envoi a échoué. Réessayez dans un instant."
