@@ -11,8 +11,10 @@ import { ScrollTrigger } from './lib/gsap'
 import { useAuth } from './composables/useAuth'
 import { initTheme } from './composables/useTheme'
 import { startLoading, doneLoading } from './composables/useLoadingBar'
+import { initAnalytics } from './lib/analytics'
 
 initTheme()
+initAnalytics()
 
 // Take scroll control away from the browser: native "auto" restoration + scroll
 // anchoring re-position the viewport when a route renders synchronously (e.g.
