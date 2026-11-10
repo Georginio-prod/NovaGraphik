@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
+import posthog from 'posthog-js'
 import { useAuth } from '@/composables/useAuth'
+import { posthogLogger } from '@/lib/posthogLogger'
 import NButton from '@/components/base/NButton.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
 import NIcon from '@/components/base/NIcon.vue'
@@ -22,9 +24,12 @@ async function submit() {
   loading.value = true
   try {
     await login(email.value.trim(), password.value)
+    if (posthog.__loaded) posthog.capture('admin_logged_in')
+    posthogLogger.info('admin login completed', { outcome: 'success' })
     const redirect = route.query.redirect
     router.push(typeof redirect === 'string' ? redirect : '/admin')
   } catch (e) {
+    posthogLogger.warn('admin login completed', { outcome: 'failure' })
     error.value = e instanceof Error ? e.message : 'Connexion impossible. Réessayez.'
   } finally {
     loading.value = false

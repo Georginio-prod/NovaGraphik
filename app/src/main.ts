@@ -8,9 +8,33 @@ import App from './App.vue'
 import { vReveal } from './directives/reveal'
 import { vEnter } from './directives/enter'
 import { ScrollTrigger } from './lib/gsap'
-import { useAuth } from './composables/useAuth'
+import { enablePosthogIdentity, useAuth } from './composables/useAuth'
 import { initTheme } from './composables/useTheme'
 import { startLoading, doneLoading } from './composables/useLoadingBar'
+import posthog from 'posthog-js'
+
+const posthogProjectToken = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN
+const posthogHost = import.meta.env.VITE_POSTHOG_HOST
+
+if (posthogProjectToken && posthogHost) {
+  posthog.init(posthogProjectToken, {
+    api_host: posthogHost,
+    defaults: '2026-01-30',
+    logs: {
+      serviceName: 'novagraphik-web',
+      environment: import.meta.env.MODE,
+    },
+  })
+  enablePosthogIdentity()
+} else if (import.meta.env.DEV) {
+  const missingVariable = posthogProjectToken
+    ? 'VITE_POSTHOG_HOST'
+    : 'VITE_POSTHOG_PROJECT_TOKEN'
+
+  throw new Error(
+    `${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once ${missingVariable} is configured`,
+  )
+}
 
 initTheme()
 
@@ -117,6 +141,10 @@ app.use(router)
 app.use(ui)
 app.directive('reveal', vReveal)
 app.directive('enter', vEnter)
+
+app.config.errorHandler = (error) => {
+  if (posthog.__loaded) posthog.captureException(error)
+}
 
 app.mount('#app')
 

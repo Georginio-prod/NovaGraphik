@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import posthog from 'posthog-js'
 import { api } from '@/lib/api'
 import { useSettings } from '@/composables/useSettings'
 import NEyebrow from '@/components/base/NEyebrow.vue'
@@ -48,6 +49,11 @@ async function save() {
   try {
     await api.put('/admin/settings', { settings: form.value })
     await reloadPublic(true)
+    if (posthog.__loaded) {
+      posthog.capture('admin_settings_saved', {
+        setting_count: Object.keys(form.value).length,
+      })
+    }
     flash.value = 'Réglages enregistrés'
     setTimeout(() => (flash.value = ''), 2400)
   } catch {

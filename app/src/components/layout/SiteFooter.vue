@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import posthog from 'posthog-js'
 import { useViewport } from '@/composables/useViewport'
 import { useSettings } from '@/composables/useSettings'
 import { supabase } from '@/lib/supabase'
@@ -30,6 +31,7 @@ async function subscribe() {
     subState.value = 'error'
     return
   }
+  if (posthog.__loaded) posthog.capture('newsletter_subscribed')
   subState.value = 'done'
   subEmail.value = ''
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import posthog from 'posthog-js'
 import { useSettings } from '@/composables/useSettings'
+import { posthogLogger } from '@/lib/posthogLogger'
 import { supabase } from '@/lib/supabase'
 import NContainer from '@/components/base/NContainer.vue'
 import NEyebrow from '@/components/base/NEyebrow.vue'
@@ -143,11 +145,23 @@ async function submit() {
       // Edge function unreachable → don't lose the request.
       await sendViaFormSubmit(url)
     }
+    if (posthog.__loaded) {
+      posthog.capture('quote_request_submitted', {
+        service_count: sel.value.length,
+        has_attachment: Boolean(file.value),
+      })
+    }
+    posthogLogger.info('quote request completed', {
+      outcome: 'success',
+      service_count: sel.value.length,
+      has_attachment: Boolean(file.value),
+    })
     sent.value = true
     // Re-show a fresh form automatically after a few seconds.
     clearTimeout(resetTimer)
     resetTimer = setTimeout(reset, 5000)
   } catch {
+    posthogLogger.warn('quote request completed', { outcome: 'failure' })
     sendError.value = `L'envoi a échoué. Réessayez, ou écrivez-nous directement à ${DEVIS_INBOX}.`
   } finally {
     sending.value = false

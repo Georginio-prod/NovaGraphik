@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import type { Session, User } from '@supabase/supabase-js'
+import posthog from 'posthog-js'
 import { supabase } from '@/lib/supabase'
 
 // Module-level singleton state, kept in sync with the Supabase session.
@@ -8,12 +9,39 @@ const user = ref<User | null>(null)
 const ready = ref(false)
 
 let initPromise: Promise<void> | null = null
+let posthogIdentityEnabled = false
+
+function identifyUser(authenticatedUser: User) {
+  const personProperties = authenticatedUser.email
+    ? { email: authenticatedUser.email }
+    : undefined
+
+  posthog.identify(authenticatedUser.id, personProperties)
+}
+
+function setAuthSession(nextSession: Session | null) {
+  const previousUserId = user.value?.id
+  const nextUser = nextSession?.user ?? null
+
+  session.value = nextSession
+  user.value = nextUser
+
+  if (!posthogIdentityEnabled || previousUserId === nextUser?.id) return
+
+  if (previousUserId) posthog.reset()
+  if (nextUser) identifyUser(nextUser)
+}
 
 async function init() {
   const { data } = await supabase.auth.getSession()
-  session.value = data.session
-  user.value = data.session?.user ?? null
+  setAuthSession(data.session)
   ready.value = true
+}
+
+// Called after the browser SDK has been initialized in main.ts.
+export function enablePosthogIdentity() {
+  posthogIdentityEnabled = true
+  if (user.value) identifyUser(user.value)
 }
 
 function startInit() {
@@ -21,10 +49,9 @@ function startInit() {
   initPromise = init().catch(() => {
     ready.value = true
   })
-  // React to subsequent auth changes (login, logout, token refresh)
-  supabase.auth.onAuthStateChange((_event, s) => {
-    session.value = s
-    user.value = s?.user ?? null
+  // React to subsequent auth changes (login, logout, token refresh).
+  supabase.auth.onAuthStateChange((_event, nextSession) => {
+    setAuthSession(nextSession)
     ready.value = true
   })
   return initPromise
@@ -41,15 +68,13 @@ export function useAuth() {
   async function login(email: string, password: string): Promise<User> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw new Error(error.message)
-    session.value = data.session
-    user.value = data.user
+    setAuthSession(data.session)
     return data.user
   }
 
   async function logout(): Promise<void> {
     await supabase.auth.signOut()
-    session.value = null
-    user.value = null
+    setAuthSession(null)
   }
 
   // Awaitable across navigation guards — resolves once Supabase has loaded the session.

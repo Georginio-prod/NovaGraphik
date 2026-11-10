@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import posthog from 'posthog-js'
 import { api, type Section } from '@/lib/api'
 import { isBuiltInSectionType } from '@/composables/useSiteContent'
 import { getTemplate, templateUses, type FieldKey } from '@/lib/templates'
@@ -61,9 +62,9 @@ function onEdit() {
   clearTimeout(saveTimer)
   saveTimer = setTimeout(saveCurrent, 600)
 }
-async function saveCurrent() {
+async function saveCurrent(): Promise<boolean> {
   const s = cur.value
-  if (!s) return
+  if (!s) return false
   try {
     await api.put(`/admin/sections/${s.id}`, {
       type: s.type,
@@ -76,9 +77,11 @@ async function saveCurrent() {
       visible: s.visible,
     })
     saveState.value = 'saved'
+    return true
   } catch {
     saveState.value = 'idle'
     error.value = 'Échec de l’enregistrement.'
+    return false
   }
 }
 
@@ -163,10 +166,15 @@ async function onDrop() {
 }
 
 async function publish() {
-  await saveCurrent()
+  const saved = await saveCurrent()
   try {
     await api.put('/admin/sections/reorder', { ids: sections.value.map((s) => s.id) })
   } catch { /* non-blocking */ }
+  if (saved && posthog.__loaded) {
+    posthog.capture('admin_page_published', {
+      section_count: sections.value.length,
+    })
+  }
   flash.value = 'Modifications publiées'
   setTimeout(() => (flash.value = ''), 2400)
 }
